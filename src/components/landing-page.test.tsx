@@ -23,7 +23,7 @@ test("renders the hero headline including the git push accent", async () => {
 	expect(h1.textContent).toContain("git push");
 });
 
-test("shows the openpiper install command", async () => {
+test("shows the install command", async () => {
 	await renderLanding();
 	expect(
 		screen.getByText("curl -fsSL https://get.openpiper.dev/install.sh | sh"),
@@ -62,14 +62,12 @@ test("every sign-in link points to /login", async () => {
 	}
 });
 
-test("docs links point to the openpiper github repo", async () => {
+test("docs links point to the piperbox github repo", async () => {
 	await renderLanding();
 	const links = screen.getAllByRole("link", { name: "docs" });
 	expect(links.length).toBeGreaterThan(0);
 	for (const link of links) {
-		expect(link.getAttribute("href")).toBe(
-			"https://github.com/openpiper/piper",
-		);
+		expect(link.getAttribute("href")).toBe("https://github.com/piperbox/piper");
 	}
 });
 
