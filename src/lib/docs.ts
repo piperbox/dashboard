@@ -1,3 +1,4 @@
+import GithubSlugger from "github-slugger";
 import { REPO_URL } from "@/lib/links";
 
 export type DocLink = { href: string; external: boolean };
@@ -22,4 +23,46 @@ export function docHref(href: string): DocLink {
 		href: `${REPO_URL}/blob/main/${href.replace(/^\.?\//, "")}`,
 		external: true,
 	};
+}
+
+export type Heading = { depth: 2 | 3; text: string; id: string };
+
+// Feed the slugger every heading, h1-h6, so its dedupe counters stay in step
+// with rehype-slug's; return only the h2/h3 the TOC renders.
+export function extractHeadings(md: string): Heading[] {
+	const slugger = new GithubSlugger();
+	const headings: Heading[] = [];
+	let inFence = false;
+
+	for (const line of md.split("\n")) {
+		if (/^\s*(```|~~~)/.test(line)) {
+			inFence = !inFence;
+			continue;
+		}
+		if (inFence) continue;
+
+		// Zero-indent only: an indented `#` is a code block, not a heading.
+		const match = /^(#{1,6}) +(.+?)\s*$/.exec(line);
+		if (!match) continue;
+
+		const depth = match[1].length;
+		const text = match[2];
+		const id = slugger.slug(text);
+		if (depth === 2 || depth === 3) headings.push({ depth, text, id });
+	}
+
+	return headings;
+}
+
+export function leadParagraph(md: string): string {
+	const body = md.replace(/^#\s+.*$/m, "");
+	const paragraph = body
+		.split("\n\n")
+		.map((block) => block.trim())
+		.find((block) => block !== "" && !block.startsWith("#"));
+	return paragraph ? paragraph.replace(/\s+/g, " ") : "";
+}
+
+export function slugFromPath(path: string): string {
+	return path.split("/").pop()?.replace(/\.md$/, "") ?? "";
 }
