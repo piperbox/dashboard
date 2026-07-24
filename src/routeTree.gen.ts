@@ -14,7 +14,9 @@ import { Route as LoginRouteImport } from './routes/login'
 import { Route as DomainsRouteImport } from './routes/domains'
 import { Route as AppsRouteImport } from './routes/apps'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as DocsIndexRouteImport } from './routes/docs/index'
 import { Route as BoxesIndexRouteImport } from './routes/boxes/index'
+import { Route as DocsSlugRouteImport } from './routes/docs/$slug'
 import { Route as BoxesBaseRouteImport } from './routes/boxes/$base'
 import { Route as AuthCallbackRouteImport } from './routes/auth/callback'
 import { Route as AppsNewRouteImport } from './routes/apps_.new'
@@ -49,9 +51,19 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const DocsIndexRoute = DocsIndexRouteImport.update({
+  id: '/docs/',
+  path: '/docs/',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const BoxesIndexRoute = BoxesIndexRouteImport.update({
   id: '/boxes/',
   path: '/boxes/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DocsSlugRoute = DocsSlugRouteImport.update({
+  id: '/docs/$slug',
+  path: '/docs/$slug',
   getParentRoute: () => rootRouteImport,
 } as any)
 const BoxesBaseRoute = BoxesBaseRouteImport.update({
@@ -104,7 +116,9 @@ export interface FileRoutesByFullPath {
   '/apps/new': typeof AppsNewRoute
   '/auth/callback': typeof AuthCallbackRoute
   '/boxes/$base': typeof BoxesBaseRoute
+  '/docs/$slug': typeof DocsSlugRoute
   '/boxes/': typeof BoxesIndexRoute
+  '/docs/': typeof DocsIndexRoute
   '/api/auth/login': typeof ApiAuthLoginRoute
   '/api/auth/logout': typeof ApiAuthLogoutRoute
   '/api/auth/session': typeof ApiAuthSessionRoute
@@ -120,7 +134,9 @@ export interface FileRoutesByTo {
   '/apps/new': typeof AppsNewRoute
   '/auth/callback': typeof AuthCallbackRoute
   '/boxes/$base': typeof BoxesBaseRoute
+  '/docs/$slug': typeof DocsSlugRoute
   '/boxes': typeof BoxesIndexRoute
+  '/docs': typeof DocsIndexRoute
   '/api/auth/login': typeof ApiAuthLoginRoute
   '/api/auth/logout': typeof ApiAuthLogoutRoute
   '/api/auth/session': typeof ApiAuthSessionRoute
@@ -137,7 +153,9 @@ export interface FileRoutesById {
   '/apps_/new': typeof AppsNewRoute
   '/auth/callback': typeof AuthCallbackRoute
   '/boxes/$base': typeof BoxesBaseRoute
+  '/docs/$slug': typeof DocsSlugRoute
   '/boxes/': typeof BoxesIndexRoute
+  '/docs/': typeof DocsIndexRoute
   '/api/auth/login': typeof ApiAuthLoginRoute
   '/api/auth/logout': typeof ApiAuthLogoutRoute
   '/api/auth/session': typeof ApiAuthSessionRoute
@@ -155,7 +173,9 @@ export interface FileRouteTypes {
     | '/apps/new'
     | '/auth/callback'
     | '/boxes/$base'
+    | '/docs/$slug'
     | '/boxes/'
+    | '/docs/'
     | '/api/auth/login'
     | '/api/auth/logout'
     | '/api/auth/session'
@@ -171,7 +191,9 @@ export interface FileRouteTypes {
     | '/apps/new'
     | '/auth/callback'
     | '/boxes/$base'
+    | '/docs/$slug'
     | '/boxes'
+    | '/docs'
     | '/api/auth/login'
     | '/api/auth/logout'
     | '/api/auth/session'
@@ -187,7 +209,9 @@ export interface FileRouteTypes {
     | '/apps_/new'
     | '/auth/callback'
     | '/boxes/$base'
+    | '/docs/$slug'
     | '/boxes/'
+    | '/docs/'
     | '/api/auth/login'
     | '/api/auth/logout'
     | '/api/auth/session'
@@ -204,7 +228,9 @@ export interface RootRouteChildren {
   AppsNewRoute: typeof AppsNewRoute
   AuthCallbackRoute: typeof AuthCallbackRoute
   BoxesBaseRoute: typeof BoxesBaseRoute
+  DocsSlugRoute: typeof DocsSlugRoute
   BoxesIndexRoute: typeof BoxesIndexRoute
+  DocsIndexRoute: typeof DocsIndexRoute
   ApiAuthLoginRoute: typeof ApiAuthLoginRoute
   ApiAuthLogoutRoute: typeof ApiAuthLogoutRoute
   ApiAuthSessionRoute: typeof ApiAuthSessionRoute
@@ -249,11 +275,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/docs/': {
+      id: '/docs/'
+      path: '/docs'
+      fullPath: '/docs/'
+      preLoaderRoute: typeof DocsIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/boxes/': {
       id: '/boxes/'
       path: '/boxes'
       fullPath: '/boxes/'
       preLoaderRoute: typeof BoxesIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/docs/$slug': {
+      id: '/docs/$slug'
+      path: '/docs/$slug'
+      fullPath: '/docs/$slug'
+      preLoaderRoute: typeof DocsSlugRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/boxes/$base': {
@@ -324,7 +364,9 @@ const rootRouteChildren: RootRouteChildren = {
   AppsNewRoute: AppsNewRoute,
   AuthCallbackRoute: AuthCallbackRoute,
   BoxesBaseRoute: BoxesBaseRoute,
+  DocsSlugRoute: DocsSlugRoute,
   BoxesIndexRoute: BoxesIndexRoute,
+  DocsIndexRoute: DocsIndexRoute,
   ApiAuthLoginRoute: ApiAuthLoginRoute,
   ApiAuthLogoutRoute: ApiAuthLogoutRoute,
   ApiAuthSessionRoute: ApiAuthSessionRoute,
