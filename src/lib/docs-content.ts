@@ -3,14 +3,16 @@
 // Everything else takes markdown as a prop so it stays testable.
 import { slugFromPath } from "@/lib/docs";
 
-export function docSources(): Record<string, string> {
-	const modules = import.meta.glob("../content/docs/*.md", {
-		query: "?raw",
-		eager: true,
-		import: "default",
-	}) as Record<string, string>;
+// Deliberately NOT eager: an eager glob inlines every document into the chunk
+// that statically imports this module, so the whole corpus would ship to every
+// visitor. Lazy importers give each document its own chunk, fetched only by the
+// route that renders it.
+const modules = import.meta.glob("../content/docs/*.md", {
+	query: "?raw",
+	import: "default",
+}) as Record<string, () => Promise<string>>;
 
-	return Object.fromEntries(
-		Object.entries(modules).map(([path, md]) => [slugFromPath(path), md]),
-	);
+export async function loadDoc(slug: string): Promise<string | null> {
+	const path = Object.keys(modules).find((p) => slugFromPath(p) === slug);
+	return path ? await modules[path]() : null;
 }
