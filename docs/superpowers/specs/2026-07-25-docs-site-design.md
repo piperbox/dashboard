@@ -106,6 +106,16 @@ imports would fail `tsc --noEmit` and the build. The glob resolves to `{}`
 when the directory is empty, so the build stays green at zero docs — and it is
 the right shape regardless, since slugs are data.
 
+**Constraint: `import.meta.glob` is a Vite-only transform and throws under
+`bun test`** (verified: `TypeError: import.meta.glob is not a function`).
+Types are fine — `vite/client` is already in `tsconfig.json`'s `types` — but
+any module containing the glob will break every test that transitively
+imports it. So `docs-content.ts` is quarantined: it holds the glob and
+nothing else, and is imported **only by routes**, which are untested by house
+rule. Every component takes its markdown and doc list as props, so no test
+ever reaches the glob. The slug-from-path mapping lives in `docs.ts` as a
+pure, tested function.
+
 ### Pure helpers — `src/lib/docs.ts`
 
 - **`docHref(href)`** — rewrites markdown links.
@@ -141,7 +151,10 @@ name is repointed.
   `a` → `docHref`, then TanStack `Link` for internal or
   `target="_blank" rel="noreferrer"` for external; `h2`/`h3` → anchored
   headings following `PageHeader`'s idiom; `pre` → a `Panel`-bordered mono
-  block; `table` → the existing `Row` treatment.
+  block; `table`/`th`/`td` → real table elements styled with the border
+  tokens, wrapped in an `overflow-x-auto` div. (Not the existing `Row`
+  primitive — it is a flex `div`, so reusing it for tabular markup would break
+  the semantics `remark-gfm` produces.)
 - `src/components/docs-layout.tsx` — top bar (wordmark → `/`, GitHub,
   "dashboard" → `/apps`), manifest-driven sidebar, TOC rail on wide screens.
 - `src/components/docs-index.tsx` — title + lead paragraph per manifest entry;
