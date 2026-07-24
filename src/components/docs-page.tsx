@@ -15,6 +15,11 @@ function DocLink({ href, children }: { href?: string; children?: ReactNode }) {
 			</a>
 		);
 	}
+	// Bare in-page anchors (e.g. "#install") aren't a route TanStack Router
+	// knows about — Link would resolve them against the current route ("/").
+	if (link.href.startsWith("#")) {
+		return <a href={link.href}>{children}</a>;
+	}
 	return <Link to={link.href}>{children}</Link>;
 }
 

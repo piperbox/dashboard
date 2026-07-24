@@ -40,6 +40,13 @@ test("rewrites markdown links to docs routes", async () => {
 	).toBe("/docs/getting-started#install");
 });
 
+test("renders a bare in-page anchor as a plain anchor, not a router link", async () => {
+	await renderDoc("# T\n\n[install](#install)\n");
+	expect(
+		screen.getByRole("link", { name: "install" }).getAttribute("href"),
+	).toBe("#install");
+});
+
 test("opens external links in a new tab", async () => {
 	await renderDoc("# T\n\n[site](https://example.com)\n");
 	const link = screen.getByRole("link", { name: "site" });
