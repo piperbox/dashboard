@@ -285,7 +285,7 @@ function Footer() {
 				<span className="font-semibold text-foreground">
 					pi@<span className="text-primary">piper</span>
 				</span>
-				<span>Apache-2.0 · runs on a Pi · openpiper/piper</span>
+				<span>Apache-2.0 · runs on a Pi · piperbox/piper</span>
 				<span className="ml-auto flex gap-[18px]">
 					<a
 						className="text-muted-foreground"

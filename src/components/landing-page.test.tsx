@@ -87,3 +87,10 @@ test("copy button copies the install command and flips its label", async () => {
 	);
 	expect(await screen.findByText("✓ copied")).toBeTruthy();
 });
+
+test("footer renders piperbox github org", async () => {
+	await renderLanding();
+	expect(
+		screen.getByText("Apache-2.0 · runs on a Pi · piperbox/piper"),
+	).toBeTruthy();
+});
