@@ -26,17 +26,48 @@ test("markdown links keep their anchor", () => {
 	});
 });
 
-test("markdown links in a subdirectory use the basename", () => {
-	expect(docHref("../docs/manual-setup.md")).toEqual({
-		href: "/docs/manual-setup",
+test("markdown links to a file in a subdirectory fall back to the repo blob url", () => {
+	// Real case: getting-started.md and manual-setup.md both link to
+	// runbooks/git-deploy-e2e.md, which isn't synced to the site.
+	expect(docHref("runbooks/git-deploy-e2e.md")).toEqual({
+		href: "https://github.com/piperbox/piper/blob/main/docs/runbooks/git-deploy-e2e.md",
+		external: true,
+	});
+});
+
+test("subdirectory markdown links keep their anchor in the blob url", () => {
+	// Real case: manual-setup.md#L137 links to a specific runbook section.
+	expect(docHref("runbooks/git-deploy-e2e.md#part-b--relay")).toEqual({
+		href: "https://github.com/piperbox/piper/blob/main/docs/runbooks/git-deploy-e2e.md#part-b--relay",
+		external: true,
+	});
+});
+
+test("other relative paths fall back to the repo blob url, relative to docs/", () => {
+	expect(docHref("packaging/systemd/piperd.service")).toEqual({
+		href: "https://github.com/piperbox/piper/blob/main/docs/packaging/systemd/piperd.service",
+		external: true,
+	});
+});
+
+test("an absolute url ending in .md stays external", () => {
+	expect(docHref("https://example.com/a.md")).toEqual({
+		href: "https://example.com/a.md",
+		external: true,
+	});
+});
+
+test("an anchor containing .md is treated as a bare anchor, not markdown", () => {
+	expect(docHref("#anchor.md")).toEqual({
+		href: "#anchor.md",
 		external: false,
 	});
 });
 
-test("other relative paths fall back to the repo blob url", () => {
-	expect(docHref("packaging/systemd/piperd.service")).toEqual({
-		href: "https://github.com/piperbox/piper/blob/main/packaging/systemd/piperd.service",
-		external: true,
+test("a trailing empty anchor does not produce a dangling #", () => {
+	expect(docHref("getting-started.md#")).toEqual({
+		href: "/docs/getting-started",
+		external: false,
 	});
 });
 

@@ -3,16 +3,17 @@ import { REPO_URL } from "@/lib/links";
 
 export type DocLink = { href: string; external: boolean };
 
-// Upstream markdown is written for GitHub, so its links are repo-relative.
-// Sibling *.md files have a site equivalent; everything else only exists in
-// the repo, so it points back at GitHub.
+// Upstream markdown is written for GitHub, so its links are relative to
+// docs/ in the piper repo. A sibling *.md file has a site equivalent;
+// everything else (including .md files in subdirectories, which aren't
+// synced) only exists in the repo, so it points back at GitHub.
 export function docHref(href: string): DocLink {
 	if (/^https?:\/\//.test(href)) return { href, external: true };
 	if (href.startsWith("#")) return { href, external: false };
 
 	const [path, anchor] = href.split("#");
-	if (path.endsWith(".md")) {
-		const slug = path.slice(0, -3).split("/").pop();
+	if (path.endsWith(".md") && !path.includes("/")) {
+		const slug = path.slice(0, -3);
 		return {
 			href: `/docs/${slug}${anchor ? `#${anchor}` : ""}`,
 			external: false,
@@ -20,7 +21,7 @@ export function docHref(href: string): DocLink {
 	}
 
 	return {
-		href: `${REPO_URL}/blob/main/${href.replace(/^\.?\//, "")}`,
+		href: `${REPO_URL}/blob/main/docs/${href.replace(/^\.?\//, "")}`,
 		external: true,
 	};
 }
