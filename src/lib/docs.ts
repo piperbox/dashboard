@@ -1,4 +1,9 @@
 import GithubSlugger from "github-slugger";
+import { toString as mdastToString } from "mdast-util-to-string";
+import remarkGfm from "remark-gfm";
+import remarkParse from "remark-parse";
+import { unified } from "unified";
+import { visit } from "unist-util-visit";
 import { REPO_URL } from "@/lib/links";
 
 export type DocLink = { href: string; external: boolean };
@@ -28,29 +33,27 @@ export function docHref(href: string): DocLink {
 
 export type Heading = { depth: 2 | 3; text: string; id: string };
 
-// Feed the slugger every heading, h1-h6, so its dedupe counters stay in step
-// with rehype-slug's; return only the h2/h3 the TOC renders.
+// Parse with the same pipeline DocsPage renders through (remark + gfm), so the
+// TOC's anchor ids agree with rehype-slug's by construction rather than by two
+// implementations happening to match. A regex scanner drifts on setext
+// headings, ATX closing sequences, and inline markup inside a heading — each
+// of which desyncs github-slugger's dedupe counter and silently breaks every
+// anchor after it. See src/components/docs-toc-anchors.test.tsx.
+//
+// Feed the slugger every heading, h1-h6, in document order for that same
+// reason; return only the h2/h3 the TOC renders.
 export function extractHeadings(md: string): Heading[] {
+	const tree = unified().use(remarkParse).use(remarkGfm).parse(md);
 	const slugger = new GithubSlugger();
 	const headings: Heading[] = [];
-	let inFence = false;
 
-	for (const line of md.split("\n")) {
-		if (/^\s*(```|~~~)/.test(line)) {
-			inFence = !inFence;
-			continue;
-		}
-		if (inFence) continue;
-
-		// Zero-indent only: an indented `#` is a code block, not a heading.
-		const match = /^(#{1,6}) +(.+?)\s*$/.exec(line);
-		if (!match) continue;
-
-		const depth = match[1].length;
-		const text = match[2];
+	visit(tree, "heading", (node) => {
+		const text = mdastToString(node);
 		const id = slugger.slug(text);
-		if (depth === 2 || depth === 3) headings.push({ depth, text, id });
-	}
+		if (node.depth === 2 || node.depth === 3) {
+			headings.push({ depth: node.depth, text, id });
+		}
+	});
 
 	return headings;
 }
