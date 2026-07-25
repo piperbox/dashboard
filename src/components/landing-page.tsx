@@ -1,9 +1,7 @@
 import { Link } from "@tanstack/react-router";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Button, buttonVariants } from "@/components/ui/button";
-
-const INSTALL_CMD = "curl -fsSL https://get.openpiper.dev/install.sh | sh";
-const GITHUB_URL = "https://github.com/openpiper/piper";
+import { INSTALL_CMD, REPO_URL } from "@/lib/links";
 
 const whyCards = [
 	{
@@ -96,7 +94,7 @@ function Header() {
 				</a>
 				<a
 					className="text-muted-foreground"
-					href={GITHUB_URL}
+					href={REPO_URL}
 					target="_blank"
 					rel="noreferrer"
 				>
@@ -106,7 +104,7 @@ function Header() {
 			<div className="ml-auto flex items-center gap-3 px-4">
 				<a
 					className="text-[13px] text-muted-foreground"
-					href={GITHUB_URL}
+					href={REPO_URL}
 					target="_blank"
 					rel="noreferrer"
 				>
@@ -149,11 +147,11 @@ function Hero() {
 				</div>
 			</div>
 			<div className="mt-4 flex justify-center gap-5 text-[13px] text-muted-foreground">
-				<a href={GITHUB_URL} target="_blank" rel="noreferrer">
+				<a href={REPO_URL} target="_blank" rel="noreferrer">
 					read the docs →
 				</a>
 				<span className="text-border">|</span>
-				<a href={GITHUB_URL} target="_blank" rel="noreferrer">
+				<a href={REPO_URL} target="_blank" rel="noreferrer">
 					★ star on github
 				</a>
 			</div>
@@ -287,11 +285,11 @@ function Footer() {
 				<span className="font-semibold text-foreground">
 					pi@<span className="text-primary">piper</span>
 				</span>
-				<span>Apache-2.0 · runs on a Pi · openpiper/piper</span>
+				<span>Apache-2.0 · runs on a Pi · piperbox/piper</span>
 				<span className="ml-auto flex gap-[18px]">
 					<a
 						className="text-muted-foreground"
-						href={GITHUB_URL}
+						href={REPO_URL}
 						target="_blank"
 						rel="noreferrer"
 					>
@@ -299,7 +297,7 @@ function Footer() {
 					</a>
 					<a
 						className="text-muted-foreground"
-						href={GITHUB_URL}
+						href={REPO_URL}
 						target="_blank"
 						rel="noreferrer"
 					>
