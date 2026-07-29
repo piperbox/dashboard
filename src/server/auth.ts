@@ -1,17 +1,30 @@
 const COOKIE_ATTRS = "HttpOnly; Secure; SameSite=Lax; Path=/";
 const SESSION_MAX_AGE = 60 * 60 * 24 * 30; // 30 days
 
+// publicOrigin is the origin the browser sees. Behind piper's Caddy the
+// container speaks plain HTTP, so request.url carries scheme http even when
+// the user is on https — the proxy preserves the real scheme in
+// X-Forwarded-Proto, and without honoring it the relay is asked to redirect
+// to http://… and refuses (redirect_uri not allowed).
+function publicOrigin(request: Request): string {
+	const url = new URL(request.url);
+	const proto = request.headers.get("X-Forwarded-Proto");
+	if (proto === "http" || proto === "https") {
+		url.protocol = `${proto}:`;
+	}
+	return url.origin;
+}
+
 export function handleLogin(request: Request, relayBase: string): Response {
-	const origin = new URL(request.url).origin;
 	const params = new URLSearchParams({
-		redirect_uri: `${origin}/auth/callback`,
+		redirect_uri: `${publicOrigin(request)}/auth/callback`,
 	});
 	return Response.redirect(`${relayBase}/v1/login/web?${params}`, 302);
 }
 
 export async function handleSession(request: Request): Promise<Response> {
 	const origin = request.headers.get("Origin");
-	if (origin === null || origin !== new URL(request.url).origin) {
+	if (origin === null || origin !== publicOrigin(request)) {
 		return new Response("cross-origin request rejected", { status: 403 });
 	}
 	let body: unknown;
