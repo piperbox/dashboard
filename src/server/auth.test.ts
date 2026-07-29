@@ -94,3 +94,27 @@ test("handleLogout expires both cookies", () => {
 		"piper_username=; HttpOnly; Secure; SameSite=Lax; Path=/; Max-Age=0",
 	]);
 });
+
+test("handleLogin honors X-Forwarded-Proto when building redirect_uri", () => {
+	// Behind piper's Caddy the container speaks plain HTTP; the proxy carries
+	// the real scheme in X-Forwarded-Proto. Without honoring it the relay is
+	// asked for http://… and rejects it (redirect_uri not allowed).
+	const request = new Request("http://piperbox.dev/api/auth/login");
+	request.headers.set("X-Forwarded-Proto", "https");
+	const res = handleLogin(request, "https://relay.test");
+	expect(res.headers.get("Location")).toBe(
+		"https://relay.test/v1/login/web?redirect_uri=https%3A%2F%2Fpiperbox.dev%2Fauth%2Fcallback",
+	);
+});
+
+test("handleSession accepts a same-origin request behind the https proxy", async () => {
+	const request = new Request("http://piperbox.dev/api/auth/session", {
+		method: "POST",
+		headers: { "Content-Type": "application/json" },
+		body: JSON.stringify({ credential: "cred-1", username: "zoe" }),
+	});
+	request.headers.set("Origin", "https://piperbox.dev");
+	request.headers.set("X-Forwarded-Proto", "https");
+	const res = await handleSession(request);
+	expect(res.status).toBe(204);
+});
