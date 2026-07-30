@@ -25,6 +25,7 @@
   --secondary-foreground: #f2f2f4;
   --muted: #1a1a1e;
   --muted-foreground: #9a9aa0;
+  --fg-subtle: #6a6a70; /* neutral subtle text — distinct from the identically-valued --status-idle */
   --accent: #1a1a1e; /* shadcn subtle hover — NOT the brand amber */
   --accent-foreground: #f2f2f4;
   --destructive: #f87171;
@@ -64,6 +65,7 @@
   --color-secondary-foreground: var(--secondary-foreground);
   --color-muted: var(--muted);
   --color-muted-foreground: var(--muted-foreground);
+  --color-fg-subtle: var(--fg-subtle);
   --color-accent: var(--accent);
   --color-accent-foreground: var(--accent-foreground);
   --color-destructive: var(--destructive);

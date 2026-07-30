@@ -13,6 +13,7 @@ import {
 	fetchAllAppDomains,
 	fetchAllApps,
 	fetchAppDomains,
+	fetchAppEnv,
 	fetchBox,
 	fetchDeploymentLogs,
 	fetchDeployments,
@@ -27,8 +28,10 @@ import {
 	linkApp,
 	RelayAuthError,
 	removeAppDomain,
+	removeAppEnv,
 	removeOrgMember,
 	revokeOrgInvite,
+	setAppEnv,
 	setOrgMemberRole,
 	startApp,
 	stopApp,
@@ -265,6 +268,47 @@ export const removeAppDomainFn = createServerFn({ method: "POST" })
 		if (!credential) throw redirect({ to: "/login" });
 		try {
 			await removeAppDomain(credential, data.base, data.app, data.domain);
+		} catch (err) {
+			if (err instanceof RelayAuthError) dropSessionAndRedirect();
+			throw err;
+		}
+	});
+
+export const getAppEnv = createServerFn()
+	.validator((d: { base: string; app: string }) => d)
+	.handler(async ({ data }) => {
+		const credential = getCookie("piper_session");
+		if (!credential) throw redirect({ to: "/login" });
+		try {
+			return await fetchAppEnv(credential, data.base, data.app);
+		} catch (err) {
+			if (err instanceof RelayAuthError) dropSessionAndRedirect();
+			throw err;
+		}
+	});
+
+export const setAppEnvFn = createServerFn({ method: "POST" })
+	.validator(
+		(d: { base: string; app: string; key: string; value: string }) => d,
+	)
+	.handler(async ({ data }) => {
+		const credential = getCookie("piper_session");
+		if (!credential) throw redirect({ to: "/login" });
+		try {
+			await setAppEnv(credential, data.base, data.app, data.key, data.value);
+		} catch (err) {
+			if (err instanceof RelayAuthError) dropSessionAndRedirect();
+			throw err;
+		}
+	});
+
+export const removeAppEnvFn = createServerFn({ method: "POST" })
+	.validator((d: { base: string; app: string; key: string }) => d)
+	.handler(async ({ data }) => {
+		const credential = getCookie("piper_session");
+		if (!credential) throw redirect({ to: "/login" });
+		try {
+			await removeAppEnv(credential, data.base, data.app, data.key);
 		} catch (err) {
 			if (err instanceof RelayAuthError) dropSessionAndRedirect();
 			throw err;

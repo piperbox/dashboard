@@ -6,11 +6,13 @@ export function PageHeader({
 	title,
 	subtitle,
 	className,
+	as: Heading = "h1",
 }: {
 	kicker?: ReactNode;
 	title: string;
 	subtitle?: ReactNode;
 	className?: string;
+	as?: "h1" | "h2";
 }) {
 	return (
 		<div className={cn("flex flex-col gap-1", className)}>
@@ -19,10 +21,10 @@ export function PageHeader({
 					{kicker}
 				</div>
 			)}
-			<h1 className="font-semibold text-xl">
+			<Heading className="font-semibold text-xl">
 				<span className="text-muted-foreground">{"# "}</span>
 				{title}
-			</h1>
+			</Heading>
 			{subtitle != null && (
 				<p className="text-muted-foreground text-sm">{subtitle}</p>
 			)}

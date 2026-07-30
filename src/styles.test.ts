@@ -16,6 +16,11 @@ test("status palette tokens exist and are wired to Tailwind utilities", () => {
 	expect(css).toContain("--color-status-ok: var(--status-ok)");
 });
 
+test("the neutral subtle foreground token exists and is wired to a Tailwind utility", () => {
+	expect(css).toContain("--fg-subtle");
+	expect(css).toContain("--color-fg-subtle: var(--fg-subtle)");
+});
+
 test("JetBrains Mono is loaded and set as the terminal font", () => {
 	expect(css).toContain("JetBrains+Mono"); // @import
 	expect(css).toContain("--font-mono");
