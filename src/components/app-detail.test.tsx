@@ -1,5 +1,11 @@
 import { expect, jest, mock, test } from "bun:test";
+import {
+	createRootRoute,
+	createRouter,
+	RouterProvider,
+} from "@tanstack/react-router";
 import { act, fireEvent, render, screen } from "@testing-library/react";
+import type { ReactElement } from "react";
 import type { App, AppDomainStatus, Deployment } from "@/server/relay";
 import { AppDetail } from "./app-detail";
 
@@ -36,75 +42,21 @@ const domain = (over: Partial<AppDomainStatus>): AppDomainStatus => ({
 	...over,
 });
 
-test("links a healthy custom domain without a warning", () => {
-	render(
-		<AppDetail
-			appName="web"
-			connected={true}
-			app={app}
-			deployments={[]}
-			domains={[
-				domain({ domain: "shop.octo.dev", status: "active", dnsOk: true }),
-			]}
-			fetchLogs={emptyLogs}
-			refresh={noop}
-			onStop={noopAsync}
-			onDelete={noopAsync}
-		/>,
-	);
-	const link = screen.getByText("shop.octo.dev");
-	expect(link.getAttribute("href")).toBe("https://shop.octo.dev");
-	// Healthy domains stay clean — no cert/dns status is surfaced.
-	expect(screen.queryByText(/dns/i)).toBeNull();
-	expect(screen.queryByText(/active/i)).toBeNull();
-});
-
-test("surfaces cert and dns status when a custom domain is unhealthy", () => {
-	render(
-		<AppDetail
-			appName="web"
-			connected={true}
-			app={app}
-			deployments={[]}
-			domains={[
-				domain({ domain: "shop.octo.dev", status: "issuing", dnsOk: false }),
-			]}
-			fetchLogs={emptyLogs}
-			refresh={noop}
-			onStop={noopAsync}
-			onDelete={noopAsync}
-		/>,
-	);
-	expect(screen.getByText("shop.octo.dev")).toBeTruthy();
-	expect(screen.getByText(/issuing/i)).toBeTruthy();
-	expect(screen.getByText(/dns pending/i)).toBeTruthy();
-});
-
-test("renders a line per custom domain", () => {
-	render(
-		<AppDetail
-			appName="web"
-			connected={true}
-			app={app}
-			deployments={[]}
-			domains={[
-				domain({ domain: "a.octo.dev" }),
-				domain({ domain: "b.octo.dev" }),
-			]}
-			fetchLogs={emptyLogs}
-			refresh={noop}
-			onStop={noopAsync}
-			onDelete={noopAsync}
-		/>,
-	);
-	expect(screen.getByText("a.octo.dev")).toBeTruthy();
-	expect(screen.getByText("b.octo.dev")).toBeTruthy();
-});
+// The settings tab mounts AppSettings, which renders <Link> — that needs a
+// router context to mount.
+async function renderInRouter(el: ReactElement) {
+	const rootRoute = createRootRoute({ component: () => el });
+	const router = createRouter({ routeTree: rootRoute });
+	await router.navigate({ to: "/" });
+	// biome-ignore lint/suspicious/noExplicitAny: test router typing shortcut
+	return render(<RouterProvider router={router as any} />);
+}
 
 test("renders the app header with repo and branch", () => {
 	render(
 		<AppDetail
 			appName="web"
+			base="abc-zoe"
 			connected={true}
 			app={app}
 			deployments={[]}
@@ -122,6 +74,7 @@ test("links to the app's relay-assigned hostname", () => {
 	render(
 		<AppDetail
 			appName="web"
+			base="abc-zoe"
 			connected={true}
 			app={app}
 			deployments={[]}
@@ -139,6 +92,7 @@ test("shows 'Not deployed yet' when the app has no hostname", () => {
 	render(
 		<AppDetail
 			appName="web"
+			base="abc-zoe"
 			connected={true}
 			app={{ ...app, hostname: "" }}
 			deployments={[]}
@@ -155,6 +109,7 @@ test("shows an offline message when the app is null", () => {
 	render(
 		<AppDetail
 			appName="web"
+			base="abc-zoe"
 			connected={false}
 			app={null}
 			deployments={[]}
@@ -171,6 +126,7 @@ test("shows a not-found message when the box is connected but the app is missing
 	render(
 		<AppDetail
 			appName="web"
+			base="abc-zoe"
 			connected={true}
 			app={null}
 			deployments={[]}
@@ -187,6 +143,7 @@ test("lists deployments and distinguishes production from PR previews", () => {
 	render(
 		<AppDetail
 			appName="web"
+			base="abc-zoe"
 			connected={true}
 			app={app}
 			deployments={[
@@ -212,6 +169,7 @@ test("expanding a deployment fetches and shows its logs", async () => {
 	render(
 		<AppDetail
 			appName="web"
+			base="abc-zoe"
 			connected={true}
 			app={app}
 			deployments={[dep({ id: "dep-abc1234", status: "failed" })]}
@@ -237,6 +195,7 @@ test("a building deployment live-tails logs and refreshes on interval", async ()
 	render(
 		<AppDetail
 			appName="web"
+			base="abc-zoe"
 			connected={true}
 			app={app}
 			deployments={[dep({ id: "dep-build001", status: "building" })]}
@@ -267,9 +226,10 @@ test("Stop calls onStop and shows a pending state while it runs", async () => {
 		release = r;
 	});
 	const onStop = mock(() => gate);
-	render(
+	await renderInRouter(
 		<AppDetail
 			appName="web"
+			base="abc-zoe"
 			connected={true}
 			app={app}
 			deployments={[]}
@@ -279,6 +239,7 @@ test("Stop calls onStop and shows a pending state while it runs", async () => {
 			onDelete={noopAsync}
 		/>,
 	);
+	fireEvent.click(screen.getByRole("tab", { name: /settings/i }));
 	fireEvent.click(screen.getByRole("button", { name: /^stop$/i }));
 	expect(onStop).toHaveBeenCalledTimes(1);
 	expect(screen.getByRole("button", { name: /stopping/i })).toBeTruthy();
@@ -288,10 +249,11 @@ test("Stop calls onStop and shows a pending state while it runs", async () => {
 	});
 });
 
-test("hides Stop when the app is already stopped", () => {
-	render(
+test("hides Stop when the app is already stopped", async () => {
+	await renderInRouter(
 		<AppDetail
 			appName="web"
+			base="abc-zoe"
 			connected={true}
 			app={{ ...app, status: "stopped" }}
 			deployments={[]}
@@ -301,14 +263,16 @@ test("hides Stop when the app is already stopped", () => {
 			onDelete={noopAsync}
 		/>,
 	);
+	fireEvent.click(screen.getByRole("tab", { name: /settings/i }));
 	expect(screen.queryByRole("button", { name: /^stop$/i })).toBeNull();
 });
 
 test("shows Start (not Stop) when the app is stopped and calls onStart", async () => {
 	const onStart = mock(async () => {});
-	render(
+	await renderInRouter(
 		<AppDetail
 			appName="web"
+			base="abc-zoe"
 			connected={true}
 			app={{ ...app, status: "stopped" }}
 			deployments={[]}
@@ -319,6 +283,7 @@ test("shows Start (not Stop) when the app is stopped and calls onStart", async (
 			onDelete={noopAsync}
 		/>,
 	);
+	fireEvent.click(screen.getByRole("tab", { name: /settings/i }));
 	expect(screen.queryByRole("button", { name: /^stop$/i })).toBeNull();
 	await act(async () => {
 		fireEvent.click(screen.getByRole("button", { name: /^start$/i }));
@@ -326,10 +291,11 @@ test("shows Start (not Stop) when the app is stopped and calls onStart", async (
 	expect(onStart).toHaveBeenCalledTimes(1);
 });
 
-test("hides Start when the app is running", () => {
-	render(
+test("hides Start when the app is running", async () => {
+	await renderInRouter(
 		<AppDetail
 			appName="web"
+			base="abc-zoe"
 			connected={true}
 			app={app}
 			deployments={[]}
@@ -340,6 +306,7 @@ test("hides Start when the app is running", () => {
 			onDelete={noopAsync}
 		/>,
 	);
+	fireEvent.click(screen.getByRole("tab", { name: /settings/i }));
 	expect(screen.queryByRole("button", { name: /^start$/i })).toBeNull();
 	expect(screen.getByRole("button", { name: /^stop$/i })).toBeTruthy();
 });
@@ -348,9 +315,10 @@ test("a rejected onStart renders the error message", async () => {
 	const onStart = async () => {
 		throw new Error("boom start");
 	};
-	render(
+	await renderInRouter(
 		<AppDetail
 			appName="web"
+			base="abc-zoe"
 			connected={true}
 			app={{ ...app, status: "stopped" }}
 			deployments={[]}
@@ -361,6 +329,7 @@ test("a rejected onStart renders the error message", async () => {
 			onDelete={noopAsync}
 		/>,
 	);
+	fireEvent.click(screen.getByRole("tab", { name: /settings/i }));
 	await act(async () => {
 		fireEvent.click(screen.getByRole("button", { name: /^start$/i }));
 	});
@@ -369,9 +338,10 @@ test("a rejected onStart renders the error message", async () => {
 
 test("Delete stays disabled until the exact app name is typed, then calls onDelete", async () => {
 	const onDelete = mock(async () => {});
-	render(
+	await renderInRouter(
 		<AppDetail
 			appName="web"
+			base="abc-zoe"
 			connected={true}
 			app={app}
 			deployments={[]}
@@ -381,6 +351,7 @@ test("Delete stays disabled until the exact app name is typed, then calls onDele
 			onDelete={onDelete}
 		/>,
 	);
+	fireEvent.click(screen.getByRole("tab", { name: /settings/i }));
 	fireEvent.click(screen.getByRole("button", { name: /delete app/i }));
 	const confirm = screen.getByRole("button", { name: /^delete$/i });
 	expect((confirm as HTMLButtonElement).disabled).toBe(true);
@@ -394,11 +365,12 @@ test("Delete stays disabled until the exact app name is typed, then calls onDele
 	expect(onDelete).toHaveBeenCalledTimes(1);
 });
 
-test("Cancel collapses the confirm block without calling onDelete", () => {
+test("Cancel collapses the confirm block without calling onDelete", async () => {
 	const onDelete = mock(async () => {});
-	render(
+	await renderInRouter(
 		<AppDetail
 			appName="web"
+			base="abc-zoe"
 			connected={true}
 			app={app}
 			deployments={[]}
@@ -408,6 +380,7 @@ test("Cancel collapses the confirm block without calling onDelete", () => {
 			onDelete={onDelete}
 		/>,
 	);
+	fireEvent.click(screen.getByRole("tab", { name: /settings/i }));
 	fireEvent.click(screen.getByRole("button", { name: /delete app/i }));
 	fireEvent.change(screen.getByLabelText(/confirm app name/i), {
 		target: { value: "web" },
@@ -421,9 +394,10 @@ test("a rejected onStop renders the error message", async () => {
 	const onStop = async () => {
 		throw new Error("boom stop");
 	};
-	render(
+	await renderInRouter(
 		<AppDetail
 			appName="web"
+			base="abc-zoe"
 			connected={true}
 			app={app}
 			deployments={[]}
@@ -433,6 +407,7 @@ test("a rejected onStop renders the error message", async () => {
 			onDelete={noopAsync}
 		/>,
 	);
+	fireEvent.click(screen.getByRole("tab", { name: /settings/i }));
 	await act(async () => {
 		fireEvent.click(screen.getByRole("button", { name: /^stop$/i }));
 	});
@@ -443,9 +418,10 @@ test("a rejected onDelete renders the error and keeps the confirm block", async 
 	const onDelete = async () => {
 		throw new Error("boom delete");
 	};
-	render(
+	await renderInRouter(
 		<AppDetail
 			appName="web"
+			base="abc-zoe"
 			connected={true}
 			app={app}
 			deployments={[]}
@@ -455,6 +431,7 @@ test("a rejected onDelete renders the error and keeps the confirm block", async 
 			onDelete={onDelete}
 		/>,
 	);
+	fireEvent.click(screen.getByRole("tab", { name: /settings/i }));
 	fireEvent.click(screen.getByRole("button", { name: /delete app/i }));
 	fireEvent.change(screen.getByLabelText(/confirm app name/i), {
 		target: { value: "web" },
@@ -470,6 +447,7 @@ test("opens on the overview tab with the app's port and last deploy", () => {
 	render(
 		<AppDetail
 			appName="web"
+			base="abc-zoe"
 			connected={true}
 			app={app}
 			deployments={[dep({ id: "dep-prod0001" })]}
@@ -493,6 +471,7 @@ test("overview says so when the app has never deployed", () => {
 	render(
 		<AppDetail
 			appName="web"
+			base="abc-zoe"
 			connected={true}
 			app={app}
 			deployments={[]}
@@ -509,6 +488,7 @@ test("the env tab is behind its tab, not on overview", () => {
 	render(
 		<AppDetail
 			appName="web"
+			base="abc-zoe"
 			connected={true}
 			app={app}
 			deployments={[]}
@@ -523,4 +503,29 @@ test("the env tab is behind its tab, not on overview", () => {
 	fireEvent.click(screen.getByRole("tab", { name: /env/i }));
 	expect(screen.getByText("NODE_ENV")).toBeTruthy();
 	expect(screen.queryByText(/push to main/i)).toBeNull();
+});
+
+test("the settings tab holds the domains and the danger zone", async () => {
+	await renderInRouter(
+		<AppDetail
+			appName="web"
+			base="abc-zoe"
+			connected={true}
+			app={app}
+			deployments={[]}
+			domains={[domain({ domain: "shop.octo.dev" })]}
+			fetchLogs={emptyLogs}
+			refresh={noop}
+			onStop={noopAsync}
+			onDelete={noopAsync}
+		/>,
+	);
+	// The header sheds both: no action buttons, no domain lines.
+	expect(screen.queryByText("shop.octo.dev")).toBeNull();
+	expect(screen.queryByRole("button", { name: /^stop$/i })).toBeNull();
+
+	fireEvent.click(screen.getByRole("tab", { name: /settings/i }));
+	expect(screen.getByText("shop.octo.dev")).toBeTruthy();
+	expect(screen.getByRole("button", { name: /^stop$/i })).toBeTruthy();
+	expect(screen.getByRole("button", { name: /delete app/i })).toBeTruthy();
 });

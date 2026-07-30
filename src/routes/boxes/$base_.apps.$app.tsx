@@ -2,12 +2,14 @@ import { createFileRoute, isRedirect, useRouter } from "@tanstack/react-router";
 import { AppDetail } from "@/components/app-detail";
 import { RelayError } from "@/components/relay-error";
 import {
+	addAppDomainFn,
 	deleteAppFn,
 	getAppDomains,
 	getAppEnv,
 	getBox,
 	getDeploymentLogs,
 	getDeployments,
+	removeAppDomainFn,
 	removeAppEnvFn,
 	setAppEnvFn,
 	startAppFn,
@@ -47,6 +49,7 @@ function AppDetailPage() {
 	return (
 		<AppDetail
 			appName={appName}
+			base={base}
 			connected={box.connected}
 			app={app}
 			deployments={deployments}
@@ -92,6 +95,14 @@ function AppDetailPage() {
 					await stopAppFn({ data: { base, name: appName } });
 				}
 				await startAppFn({ data: { base, name: appName } });
+				router.invalidate();
+			}}
+			onAddDomain={async (domain) => {
+				await addAppDomainFn({ data: { base, app: appName, domain } });
+				router.invalidate();
+			}}
+			onRemoveDomain={async (domain) => {
+				await removeAppDomainFn({ data: { base, app: appName, domain } });
 				router.invalidate();
 			}}
 		/>
