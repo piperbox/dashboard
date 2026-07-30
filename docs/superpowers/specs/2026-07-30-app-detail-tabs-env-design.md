@@ -233,15 +233,19 @@ Test-first throughout, at the seams the repo already tests
 - **`src/server/relay-app-env.test.ts`** — `{env}` unwrapping, `POST` body
   shape, key encoding in the `DELETE` path, `401` → `RelayAuthError`, `502` →
   `BoxOfflineError`, non-2xx body text surfaced.
-- **`src/components/app-env.test.tsx`** — renders keys; masks a secret-looking
-  value and reveals it on toggle; a non-secret value renders plain; add-row
-  blocks an invalid key, `PORT`, and a duplicate, each with its message; a valid
-  add calls `onSet`; edit calls `onSet` with the new value; `remove` calls
-  `onRemove`; the banner appears after a write and clears after a successful
-  restart; a failed restart keeps the banner and shows the error; empty state.
+- **`src/components/app-env.test.tsx`** — renders keys; every value is masked
+  by default and `Reveal all` / `Hide values` toggles all of them together; the
+  `secret` badge marks only regex-matched keys, not masking eligibility;
+  add-row blocks an invalid key, `PORT`, and a duplicate, each with its
+  message; a valid add calls `onSet`; edit calls `onSet` with the new value;
+  `remove` calls `onRemove`; the banner appears after a write and clears after
+  a successful restart; a failed restart keeps the banner and shows the error;
+  empty state; `env === null` renders only the upgrade hint, with no table,
+  add button, or reveal toggle.
 - **`src/components/app-detail.test.tsx`** — tab switching reveals each panel and
   hides the others; the existing deployment/log and stop/start/delete assertions
-  move to their new tabs.
+  move to their new tabs; the env tab's pending banner survives switching to
+  another tab and back; a null `env` still lets the other tabs render.
 - **`src/components/app-settings.test.tsx`** — read-only rows render their
   values with no controls; domain add/remove call their callbacks; danger-zone
   delete still requires the typed name.
