@@ -1,9 +1,11 @@
 import { isRedirect } from "@tanstack/react-router";
-import { useEffect, useRef, useState } from "react";
+import { type ReactNode, useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { inputClass } from "@/components/ui/field";
+import { HintBar } from "@/components/ui/hint-bar";
 import { type DeviceStatus, StatusDot } from "@/components/ui/status-dot";
 import { relativeTime } from "@/lib/relative-time";
+import { cn } from "@/lib/utils";
 import type { App, AppDomainStatus, Deployment } from "@/server/relay";
 import { AppEnv } from "./app-env";
 import { StatusPill } from "./status-pill";
@@ -63,6 +65,54 @@ function DomainLine({ d }: { d: AppDomainStatus }) {
 	);
 }
 
+type TabId = "overview" | "deployments" | "env";
+
+const TABS: TabId[] = ["overview", "deployments", "env"];
+
+function TabNav({
+	active,
+	onSelect,
+}: {
+	active: TabId;
+	onSelect: (tab: TabId) => void;
+}) {
+	return (
+		<div role="tablist" className="flex border-border border-b">
+			{TABS.map((tab) => {
+				const selected = tab === active;
+				return (
+					<button
+						key={tab}
+						type="button"
+						role="tab"
+						aria-selected={selected}
+						onClick={() => onSelect(tab)}
+						className={cn(
+							"-mb-px border border-border border-l-0 px-4 py-2 font-medium text-[13px] first:border-l",
+							selected
+								? "border-b-background bg-card text-primary"
+								: "text-muted-foreground hover:text-foreground",
+						)}
+					>
+						{tab}
+					</button>
+				);
+			})}
+		</div>
+	);
+}
+
+function StatTile({ label, children }: { label: string; children: ReactNode }) {
+	return (
+		<div className="min-w-[230px] flex-1 rounded-[2px] border border-border bg-card p-3.5">
+			<div className="text-[11px] uppercase tracking-wider text-muted-foreground">
+				{label}
+			</div>
+			<div className="mt-2 text-[15px]">{children}</div>
+		</div>
+	);
+}
+
 export function AppDetail({
 	appName,
 	connected,
@@ -79,6 +129,8 @@ export function AppDetail({
 	onRemoveEnv = async () => {},
 	onRestart = async () => {},
 }: AppDetailProps) {
+	const [tab, setTab] = useState<TabId>("overview");
+
 	if (!connected) {
 		return (
 			<main className="flex flex-col gap-6 py-8">
@@ -98,6 +150,8 @@ export function AppDetail({
 			</main>
 		);
 	}
+
+	const lastDeploy = deployments[0];
 
 	return (
 		<main className="flex flex-col gap-6 py-8">
@@ -130,33 +184,57 @@ export function AppDetail({
 				/>
 			</div>
 
-			<section className="flex flex-col gap-2">
-				<h2 className="font-semibold text-sm">Deployments</h2>
-				{deployments.length === 0 ? (
-					<p className="text-muted-foreground text-sm">No deployments yet.</p>
-				) : (
-					<ul className="flex flex-col gap-2">
-						{deployments.map((d) => (
-							<DeploymentRow
-								key={d.id}
-								deployment={d}
-								repo={app.repo}
-								fetchLogs={fetchLogs}
-								refresh={refresh}
-							/>
-						))}
-					</ul>
-				)}
-			</section>
+			<TabNav active={tab} onSelect={setTab} />
 
-			<AppEnv
-				appName={app.name}
-				status={app.status}
-				env={env}
-				onSet={onSetEnv}
-				onRemove={onRemoveEnv}
-				onRestart={onRestart}
-			/>
+			{tab === "overview" && (
+				<div className="flex flex-col gap-4">
+					<div className="flex flex-wrap gap-3">
+						<StatTile label="status">
+							<span className="flex items-center gap-2">
+								<StatusPill status={app.status} />
+								<span className="text-muted-foreground">· port {app.port}</span>
+							</span>
+						</StatTile>
+						<StatTile label="last deploy">
+							{lastDeploy
+								? `${lastDeploy.id.slice(0, 8)} · ${relativeTime(lastDeploy.createdAt)}`
+								: "never deployed"}
+						</StatTile>
+					</div>
+					<HintBar>push to {app.branch} to build and publish.</HintBar>
+				</div>
+			)}
+
+			{tab === "deployments" && (
+				<section className="flex flex-col gap-2">
+					{deployments.length === 0 ? (
+						<p className="text-muted-foreground text-sm">No deployments yet.</p>
+					) : (
+						<ul className="flex flex-col gap-2">
+							{deployments.map((d) => (
+								<DeploymentRow
+									key={d.id}
+									deployment={d}
+									repo={app.repo}
+									fetchLogs={fetchLogs}
+									refresh={refresh}
+								/>
+							))}
+						</ul>
+					)}
+				</section>
+			)}
+
+			{tab === "env" && (
+				<AppEnv
+					appName={app.name}
+					status={app.status}
+					env={env}
+					onSet={onSetEnv}
+					onRemove={onRemoveEnv}
+					onRestart={onRestart}
+				/>
+			)}
 		</main>
 	);
 }

@@ -115,8 +115,7 @@ test("renders the app header with repo and branch", () => {
 		/>,
 	);
 	expect(screen.getByText("web")).toBeTruthy();
-	expect(screen.getByText(/getpiper\/example/)).toBeTruthy();
-	expect(screen.getByText(/main/)).toBeTruthy();
+	expect(screen.getByText(/getpiper\/example · main/)).toBeTruthy();
 });
 
 test("links to the app's relay-assigned hostname", () => {
@@ -200,6 +199,7 @@ test("lists deployments and distinguishes production from PR previews", () => {
 			onDelete={noopAsync}
 		/>,
 	);
+	fireEvent.click(screen.getByRole("tab", { name: /deployments/i }));
 	expect(screen.getByText(/Production/)).toBeTruthy();
 	const prLink = screen.getByRole("link", { name: /PR #12/ });
 	expect(prLink.getAttribute("href")).toBe(
@@ -221,6 +221,7 @@ test("expanding a deployment fetches and shows its logs", async () => {
 			onDelete={noopAsync}
 		/>,
 	);
+	fireEvent.click(screen.getByRole("tab", { name: /deployments/i }));
 	fireEvent.click(screen.getByRole("button", { name: /dep-abc1/ }));
 	expect(await screen.findByText("logs for dep-abc1234")).toBeTruthy();
 });
@@ -247,6 +248,7 @@ test("a building deployment live-tails logs and refreshes on interval", async ()
 			onDelete={noopAsync}
 		/>,
 	);
+	fireEvent.click(screen.getByRole("tab", { name: /deployments/i }));
 	await act(async () => {
 		fireEvent.click(screen.getByRole("button", { name: /dep-buil/ }));
 	});
@@ -437,24 +439,6 @@ test("a rejected onStop renders the error message", async () => {
 	expect(screen.getByText(/boom stop/i)).toBeTruthy();
 });
 
-test("renders the app's env variables", () => {
-	render(
-		<AppDetail
-			appName="web"
-			connected={true}
-			app={app}
-			deployments={[]}
-			env={{ NODE_ENV: "production" }}
-			fetchLogs={emptyLogs}
-			refresh={noop}
-			onStop={noopAsync}
-			onDelete={noopAsync}
-		/>,
-	);
-	expect(screen.getByText("NODE_ENV")).toBeTruthy();
-	expect(screen.getByText("production")).toBeTruthy();
-});
-
 test("a rejected onDelete renders the error and keeps the confirm block", async () => {
 	const onDelete = async () => {
 		throw new Error("boom delete");
@@ -480,4 +464,63 @@ test("a rejected onDelete renders the error and keeps the confirm block", async 
 	});
 	expect(screen.getByText(/boom delete/i)).toBeTruthy();
 	expect(screen.getByLabelText(/confirm app name/i)).toBeTruthy();
+});
+
+test("opens on the overview tab with the app's port and last deploy", () => {
+	render(
+		<AppDetail
+			appName="web"
+			connected={true}
+			app={app}
+			deployments={[dep({ id: "dep-prod0001" })]}
+			fetchLogs={emptyLogs}
+			refresh={noop}
+			onStop={noopAsync}
+			onDelete={noopAsync}
+		/>,
+	);
+	expect(
+		screen
+			.getByRole("tab", { name: /overview/i })
+			.getAttribute("aria-selected"),
+	).toBe("true");
+	expect(screen.getByText(/port 8081/i)).toBeTruthy();
+	expect(screen.getByText(/dep-prod/)).toBeTruthy();
+	expect(screen.getByText(/push to main/i)).toBeTruthy();
+});
+
+test("overview says so when the app has never deployed", () => {
+	render(
+		<AppDetail
+			appName="web"
+			connected={true}
+			app={app}
+			deployments={[]}
+			fetchLogs={emptyLogs}
+			refresh={noop}
+			onStop={noopAsync}
+			onDelete={noopAsync}
+		/>,
+	);
+	expect(screen.getByText(/never deployed/i)).toBeTruthy();
+});
+
+test("the env tab is behind its tab, not on overview", () => {
+	render(
+		<AppDetail
+			appName="web"
+			connected={true}
+			app={app}
+			deployments={[]}
+			env={{ NODE_ENV: "production" }}
+			fetchLogs={emptyLogs}
+			refresh={noop}
+			onStop={noopAsync}
+			onDelete={noopAsync}
+		/>,
+	);
+	expect(screen.queryByText("NODE_ENV")).toBeNull();
+	fireEvent.click(screen.getByRole("tab", { name: /env/i }));
+	expect(screen.getByText("NODE_ENV")).toBeTruthy();
+	expect(screen.queryByText(/push to main/i)).toBeNull();
 });
