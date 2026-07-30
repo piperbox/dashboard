@@ -1,22 +1,21 @@
-import { isRedirect } from "@tanstack/react-router";
 import { type ReactNode, useEffect, useRef, useState } from "react";
-import { Button } from "@/components/ui/button";
-import { inputClass } from "@/components/ui/field";
 import { HintBar } from "@/components/ui/hint-bar";
-import { type DeviceStatus, StatusDot } from "@/components/ui/status-dot";
 import { relativeTime } from "@/lib/relative-time";
 import { cn } from "@/lib/utils";
 import type { App, AppDomainStatus, Deployment } from "@/server/relay";
 import { AppEnv } from "./app-env";
+import { AppSettings } from "./app-settings";
 import { StatusPill } from "./status-pill";
 
 export type AppDetailProps = {
 	appName: string;
+	base: string;
 	connected: boolean;
 	app: App | null;
 	deployments: Deployment[];
 	domains?: AppDomainStatus[];
-	env?: Record<string, string>;
+	// null means this box's piperd predates the env endpoint.
+	env?: Record<string, string> | null;
 	fetchLogs: (id: string) => Promise<string>;
 	refresh: () => void;
 	onStop: () => Promise<void>;
@@ -25,49 +24,13 @@ export type AppDetailProps = {
 	onSetEnv?: (key: string, value: string) => Promise<void>;
 	onRemoveEnv?: (key: string) => Promise<void>;
 	onRestart?: () => Promise<void>;
+	onAddDomain?: (domain: string) => Promise<void>;
+	onRemoveDomain?: (domain: string) => Promise<void>;
 };
 
-function domainDeviceStatus(status: string): DeviceStatus {
-	switch (status) {
-		case "active":
-			return "ok";
-		case "pending":
-		case "issuing":
-			return "warn";
-		case "failed":
-			return "danger";
-		default:
-			return "idle";
-	}
-}
+type TabId = "overview" | "deployments" | "env" | "settings";
 
-function DomainLine({ d }: { d: AppDomainStatus }) {
-	// Healthy domains read clean; only surface cert/dns status when something
-	// still needs attention (mirrors the apps grid / domains screens).
-	const healthy = d.status === "active" && d.dnsOk;
-	return (
-		<div className="flex flex-wrap items-center gap-2.5 text-[13px]">
-			<a href={`https://${d.domain}`} className="text-primary no-underline">
-				{d.domain}
-			</a>
-			{!healthy && (
-				<>
-					<StatusDot status={domainDeviceStatus(d.status)}>
-						{d.status || "pending"}
-					</StatusDot>
-					<span className="text-status-idle">·</span>
-					<span className="text-muted-foreground">
-						{d.dnsOk ? "dns ok" : "dns pending"}
-					</span>
-				</>
-			)}
-		</div>
-	);
-}
-
-type TabId = "overview" | "deployments" | "env";
-
-const TABS: TabId[] = ["overview", "deployments", "env"];
+const TABS: TabId[] = ["overview", "deployments", "env", "settings"];
 
 function TabNav({
 	active,
@@ -115,6 +78,7 @@ function StatTile({ label, children }: { label: string; children: ReactNode }) {
 
 export function AppDetail({
 	appName,
+	base,
 	connected,
 	app,
 	deployments,
@@ -128,8 +92,14 @@ export function AppDetail({
 	onSetEnv = async () => {},
 	onRemoveEnv = async () => {},
 	onRestart = async () => {},
+	onAddDomain = async () => {},
+	onRemoveDomain = async () => {},
 }: AppDetailProps) {
 	const [tab, setTab] = useState<TabId>("overview");
+	// Lives here, not in AppEnv, so it survives the env tab unmounting when the
+	// user switches tabs — env writes never touch the running container, so
+	// this is the only signal that a restart is still owed.
+	const [pendingEnv, setPendingEnv] = useState<string[]>([]);
 
 	if (!connected) {
 		return (
@@ -169,19 +139,9 @@ export function AppDetail({
 						Not deployed yet
 					</span>
 				)}
-				{domains.map((d) => (
-					<DomainLine key={d.domain} d={d} />
-				))}
 				<p className="text-muted-foreground text-sm">
 					{app.repo} · {app.branch}
 				</p>
-				<AppActions
-					name={app.name}
-					status={app.status}
-					onStop={onStop}
-					onStart={onStart}
-					onDelete={onDelete}
-				/>
 			</div>
 
 			<TabNav active={tab} onSelect={setTab} />
@@ -230,148 +190,27 @@ export function AppDetail({
 					appName={app.name}
 					status={app.status}
 					env={env}
+					pending={pendingEnv}
+					onPendingChange={setPendingEnv}
 					onSet={onSetEnv}
 					onRemove={onRemoveEnv}
 					onRestart={onRestart}
 				/>
 			)}
-		</main>
-	);
-}
 
-function AppActions({
-	name,
-	status,
-	onStop,
-	onStart,
-	onDelete,
-}: {
-	name: string;
-	status: string;
-	onStop: () => Promise<void>;
-	onStart: () => Promise<void>;
-	onDelete: () => Promise<void>;
-}) {
-	const [stopping, setStopping] = useState(false);
-	const [starting, setStarting] = useState(false);
-	const [confirming, setConfirming] = useState(false);
-	const [typed, setTyped] = useState("");
-	const [deleting, setDeleting] = useState(false);
-	const [error, setError] = useState<string | null>(null);
-
-	async function handleStop() {
-		setError(null);
-		setStopping(true);
-		try {
-			await onStop();
-		} catch (err) {
-			if (isRedirect(err)) throw err;
-			setError((err as Error).message || "Couldn't stop the app.");
-		} finally {
-			setStopping(false);
-		}
-	}
-
-	async function handleStart() {
-		setError(null);
-		setStarting(true);
-		try {
-			await onStart();
-		} catch (err) {
-			if (isRedirect(err)) throw err;
-			setError((err as Error).message || "Couldn't start the app.");
-		} finally {
-			setStarting(false);
-		}
-	}
-
-	async function handleDelete() {
-		setError(null);
-		setDeleting(true);
-		try {
-			await onDelete();
-			// On success the parent navigates away and unmounts this component,
-			// so no state reset here.
-		} catch (err) {
-			if (isRedirect(err)) throw err;
-			setError((err as Error).message || "Couldn't delete the app.");
-			setDeleting(false);
-		}
-	}
-
-	return (
-		<div className="mt-1 flex flex-col gap-2">
-			<div className="flex flex-wrap items-center gap-2">
-				{status === "stopped" ? (
-					<Button
-						type="button"
-						onClick={handleStart}
-						disabled={starting}
-						bracketed={false}
-					>
-						{starting ? "Starting…" : "Start"}
-					</Button>
-				) : (
-					<Button
-						type="button"
-						variant="neutral"
-						onClick={handleStop}
-						disabled={stopping}
-						bracketed={false}
-					>
-						{stopping ? "Stopping…" : "Stop"}
-					</Button>
-				)}
-				<Button
-					type="button"
-					variant="neutral"
-					onClick={() => setConfirming(true)}
-					bracketed={false}
-				>
-					Delete app
-				</Button>
-			</div>
-
-			{confirming && (
-				<div className="flex flex-col gap-2 rounded-[2px] border border-destructive/40 p-3">
-					<p className="text-destructive text-sm">
-						This permanently deletes <span className="font-mono">{name}</span>{" "}
-						and its deployments. This can't be undone — type the app name to
-						confirm.
-					</p>
-					<input
-						aria-label="Confirm app name"
-						value={typed}
-						onChange={(e) => setTyped(e.target.value)}
-						className={inputClass}
-					/>
-					<div className="flex gap-2">
-						<Button
-							type="button"
-							variant="neutral"
-							onClick={() => {
-								setConfirming(false);
-								setTyped("");
-							}}
-							bracketed={false}
-						>
-							Cancel
-						</Button>
-						<Button
-							type="button"
-							variant="destructive"
-							onClick={handleDelete}
-							disabled={typed !== name || deleting}
-							bracketed={false}
-						>
-							{deleting ? "Deleting…" : "Delete"}
-						</Button>
-					</div>
-				</div>
+			{tab === "settings" && (
+				<AppSettings
+					app={app}
+					base={base}
+					domains={domains}
+					onAddDomain={onAddDomain}
+					onRemoveDomain={onRemoveDomain}
+					onStop={onStop}
+					onStart={onStart}
+					onDelete={onDelete}
+				/>
 			)}
-
-			{error && <p className="text-destructive text-sm">{error}</p>}
-		</div>
+		</main>
 	);
 }
 

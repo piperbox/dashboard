@@ -9,8 +9,9 @@ import { Row } from "@/components/ui/row";
 import { StatusDot } from "@/components/ui/status-dot";
 import { cn } from "@/lib/utils";
 
-// Keys whose values are masked until the user asks to see them. A display
-// default only — the API hands back every value in plaintext.
+// Keys that get a "secret" badge for emphasis — every value is masked by
+// default regardless of whether it matches. A display default only — the API
+// hands back every value in plaintext.
 const SECRET_RE =
 	/(SECRET|TOKEN|_KEY|KEY_|PASSWORD|CREDENTIAL|PRIVATE|DSN|DATABASE_URL)/i;
 // Mirrors piper's envKeyRE so the UI refuses exactly what the API would 400 on.
@@ -19,13 +20,19 @@ const KEY_RE = /^[A-Za-z_][A-Za-z0-9_]*$/;
 export type AppEnvProps = {
 	appName: string;
 	status: string;
-	env: Record<string, string>;
+	// null means this box's piperd predates the env endpoint (404s), not that
+	// the app simply has no variables ({} means that).
+	env: Record<string, string> | null;
+	// Lives in the parent (AppDetail) rather than local state, so it survives
+	// this tab unmounting when the user switches tabs.
+	pending: string[];
+	onPendingChange: (next: string[]) => void;
 	onSet: (key: string, value: string) => Promise<void>;
 	onRemove: (key: string) => Promise<void>;
 	onRestart: () => Promise<void>;
 };
 
-export function keyError(key: string, existing: string[]): string | null {
+function keyError(key: string, existing: string[]): string | null {
 	if (!KEY_RE.test(key)) {
 		return `"${key}" must start with a letter or _ and contain only letters, digits and _.`;
 	}
@@ -42,31 +49,40 @@ export function AppEnv({
 	appName,
 	status,
 	env,
+	pending,
+	onPendingChange,
 	onSet,
 	onRemove,
 	onRestart,
 }: AppEnvProps) {
 	const [reveal, setReveal] = useState(false);
-	// Writes persist on the box but never touch the running container, so track
-	// what changed this session to drive the restart prompt.
-	const [pending, setPending] = useState<string[]>([]);
 	const [adding, setAdding] = useState(false);
 	const [newKey, setNewKey] = useState("");
 	const [newValue, setNewValue] = useState("");
 	const [busy, setBusy] = useState(false);
 	const [error, setError] = useState<string | null>(null);
 
+	const stopped = status === "stopped";
+
+	if (env === null) {
+		return (
+			<HintBar>
+				this box's piperd predates env var support — upgrade piperd on the box
+				to manage {appName}'s environment variables here.
+			</HintBar>
+		);
+	}
+
 	const keys = Object.keys(env).sort();
 	const trimmedKey = newKey.trim();
 	const addError = trimmedKey === "" ? null : keyError(trimmedKey, keys);
-	const stopped = status === "stopped";
 
 	async function write(key: string, fn: () => Promise<void>): Promise<boolean> {
 		setError(null);
 		setBusy(true);
 		try {
 			await fn();
-			setPending((p) => (p.includes(key) ? p : [...p, key]));
+			onPendingChange(pending.includes(key) ? pending : [...pending, key]);
 			return true;
 		} catch (err) {
 			if (isRedirect(err)) throw err;
@@ -82,7 +98,7 @@ export function AppEnv({
 		setBusy(true);
 		try {
 			await onRestart();
-			setPending([]);
+			onPendingChange([]);
 		} catch (err) {
 			if (isRedirect(err)) throw err;
 			setError((err as Error).message || `Couldn't restart ${appName}.`);
@@ -256,7 +272,9 @@ function EnvRow({
 	const [editing, setEditing] = useState(false);
 	const [draft, setDraft] = useState(value);
 	const secret = SECRET_RE.test(name);
-	const masked = secret && !reveal;
+	// Every value is masked by default — the secret badge is emphasis only,
+	// not a signal that other values are safe to show in the clear.
+	const masked = !reveal;
 
 	return (
 		<Row className="text-[13px]">

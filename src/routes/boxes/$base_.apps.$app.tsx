@@ -2,12 +2,14 @@ import { createFileRoute, isRedirect, useRouter } from "@tanstack/react-router";
 import { AppDetail } from "@/components/app-detail";
 import { RelayError } from "@/components/relay-error";
 import {
+	addAppDomainFn,
 	deleteAppFn,
 	getAppDomains,
 	getAppEnv,
 	getBox,
 	getDeploymentLogs,
 	getDeployments,
+	removeAppDomainFn,
 	removeAppEnvFn,
 	setAppEnvFn,
 	startAppFn,
@@ -27,12 +29,19 @@ export const Route = createFileRoute("/boxes/$base_/apps/$app")({
 			? await Promise.all([
 					getDeployments({ data: { base: params.base, app: params.app } }),
 					getAppDomains({ data: { base: params.base, app: params.app } }),
-					getAppEnv({ data: { base: params.base, app: params.app } }),
+					getAppEnv({ data: { base: params.base, app: params.app } }).catch(
+						(err) => {
+							if (isRedirect(err)) throw err;
+							// A box on a piperd without the env endpoint 404s here; the
+							// rest of the page must still render.
+							return null;
+						},
+					),
 				])
-			: ([[], [], {}] as [
+			: ([[], [], null] as [
 					Deployment[],
 					AppDomainStatus[],
-					Record<string, string>,
+					Record<string, string> | null,
 				]);
 		return { box, app, deployments, domains, env };
 	},
@@ -47,6 +56,7 @@ function AppDetailPage() {
 	return (
 		<AppDetail
 			appName={appName}
+			base={base}
 			connected={box.connected}
 			app={app}
 			deployments={deployments}
@@ -87,11 +97,24 @@ function AppDetailPage() {
 			}}
 			onRestart={async () => {
 				// Env applies on the next start; a running container has to come
-				// down first.
-				if (app?.status !== "stopped") {
-					await stopAppFn({ data: { base, name: appName } });
+				// down first. Invalidate in `finally` so a partial restart (stop
+				// succeeds, start fails) still refreshes the status pill instead of
+				// leaving it showing "running" for a stopped container.
+				try {
+					if (app?.status !== "stopped") {
+						await stopAppFn({ data: { base, name: appName } });
+					}
+					await startAppFn({ data: { base, name: appName } });
+				} finally {
+					router.invalidate();
 				}
-				await startAppFn({ data: { base, name: appName } });
+			}}
+			onAddDomain={async (domain) => {
+				await addAppDomainFn({ data: { base, app: appName, domain } });
+				router.invalidate();
+			}}
+			onRemoveDomain={async (domain) => {
+				await removeAppDomainFn({ data: { base, app: appName, domain } });
 				router.invalidate();
 			}}
 		/>
