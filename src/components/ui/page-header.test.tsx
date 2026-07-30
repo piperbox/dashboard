@@ -19,3 +19,8 @@ test("omits kicker and subtitle when absent", () => {
 	render(<PageHeader title="apps" />);
 	expect(screen.queryByText("your hardware")).toBeNull();
 });
+
+test("renders an h2 when as='h2' so in-page sections don't add a second h1", () => {
+	render(<PageHeader title="env" as="h2" />);
+	expect(screen.getByRole("heading", { level: 2 }).textContent).toContain("env");
+});
