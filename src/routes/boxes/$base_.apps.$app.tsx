@@ -4,12 +4,16 @@ import { RelayError } from "@/components/relay-error";
 import {
 	deleteAppFn,
 	getAppDomains,
+	getAppEnv,
 	getBox,
 	getDeploymentLogs,
 	getDeployments,
+	removeAppEnvFn,
+	setAppEnvFn,
 	startAppFn,
 	stopAppFn,
 } from "@/server/fns";
+import type { AppDomainStatus, Deployment } from "@/server/relay";
 
 export const Route = createFileRoute("/boxes/$base_/apps/$app")({
 	loader: async ({ params }) => {
@@ -17,13 +21,20 @@ export const Route = createFileRoute("/boxes/$base_/apps/$app")({
 		const app = box.connected
 			? (box.apps.find((a) => a.name === params.app) ?? null)
 			: null;
-		const [deployments, domains] = app
+		// The empty branch is annotated because TS otherwise widens the tuple
+		// into a union array.
+		const [deployments, domains, env] = app
 			? await Promise.all([
 					getDeployments({ data: { base: params.base, app: params.app } }),
 					getAppDomains({ data: { base: params.base, app: params.app } }),
+					getAppEnv({ data: { base: params.base, app: params.app } }),
 				])
-			: [[], []];
-		return { box, app, deployments, domains };
+			: ([[], [], {}] as [
+					Deployment[],
+					AppDomainStatus[],
+					Record<string, string>,
+				]);
+		return { box, app, deployments, domains, env };
 	},
 	component: AppDetailPage,
 	errorComponent: RelayError,
@@ -31,7 +42,7 @@ export const Route = createFileRoute("/boxes/$base_/apps/$app")({
 
 function AppDetailPage() {
 	const { base, app: appName } = Route.useParams();
-	const { box, app, deployments, domains } = Route.useLoaderData();
+	const { box, app, deployments, domains, env } = Route.useLoaderData();
 	const router = useRouter();
 	return (
 		<AppDetail
@@ -40,6 +51,7 @@ function AppDetailPage() {
 			app={app}
 			deployments={deployments}
 			domains={domains}
+			env={env}
 			fetchLogs={async (id) => {
 				try {
 					return await getDeploymentLogs({
@@ -64,6 +76,23 @@ function AppDetailPage() {
 			onDelete={async () => {
 				await deleteAppFn({ data: { base, name: appName } });
 				await router.navigate({ to: "/boxes/$base", params: { base } });
+			}}
+			onSetEnv={async (key, value) => {
+				await setAppEnvFn({ data: { base, app: appName, key, value } });
+				router.invalidate();
+			}}
+			onRemoveEnv={async (key) => {
+				await removeAppEnvFn({ data: { base, app: appName, key } });
+				router.invalidate();
+			}}
+			onRestart={async () => {
+				// Env applies on the next start; a running container has to come
+				// down first.
+				if (app?.status !== "stopped") {
+					await stopAppFn({ data: { base, name: appName } });
+				}
+				await startAppFn({ data: { base, name: appName } });
+				router.invalidate();
 			}}
 		/>
 	);

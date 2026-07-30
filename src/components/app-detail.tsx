@@ -5,6 +5,7 @@ import { inputClass } from "@/components/ui/field";
 import { type DeviceStatus, StatusDot } from "@/components/ui/status-dot";
 import { relativeTime } from "@/lib/relative-time";
 import type { App, AppDomainStatus, Deployment } from "@/server/relay";
+import { AppEnv } from "./app-env";
 import { StatusPill } from "./status-pill";
 
 export type AppDetailProps = {
@@ -13,11 +14,15 @@ export type AppDetailProps = {
 	app: App | null;
 	deployments: Deployment[];
 	domains?: AppDomainStatus[];
+	env?: Record<string, string>;
 	fetchLogs: (id: string) => Promise<string>;
 	refresh: () => void;
 	onStop: () => Promise<void>;
 	onStart?: () => Promise<void>;
 	onDelete: () => Promise<void>;
+	onSetEnv?: (key: string, value: string) => Promise<void>;
+	onRemoveEnv?: (key: string) => Promise<void>;
+	onRestart?: () => Promise<void>;
 };
 
 function domainDeviceStatus(status: string): DeviceStatus {
@@ -64,11 +69,15 @@ export function AppDetail({
 	app,
 	deployments,
 	domains = [],
+	env = {},
 	fetchLogs,
 	refresh,
 	onStop,
 	onStart = async () => {},
 	onDelete,
+	onSetEnv = async () => {},
+	onRemoveEnv = async () => {},
+	onRestart = async () => {},
 }: AppDetailProps) {
 	if (!connected) {
 		return (
@@ -139,6 +148,15 @@ export function AppDetail({
 					</ul>
 				)}
 			</section>
+
+			<AppEnv
+				appName={app.name}
+				status={app.status}
+				env={env}
+				onSet={onSetEnv}
+				onRemove={onRemoveEnv}
+				onRestart={onRestart}
+			/>
 		</main>
 	);
 }

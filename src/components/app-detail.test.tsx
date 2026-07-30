@@ -437,6 +437,24 @@ test("a rejected onStop renders the error message", async () => {
 	expect(screen.getByText(/boom stop/i)).toBeTruthy();
 });
 
+test("renders the app's env variables", () => {
+	render(
+		<AppDetail
+			appName="web"
+			connected={true}
+			app={app}
+			deployments={[]}
+			env={{ NODE_ENV: "production" }}
+			fetchLogs={emptyLogs}
+			refresh={noop}
+			onStop={noopAsync}
+			onDelete={noopAsync}
+		/>,
+	);
+	expect(screen.getByText("NODE_ENV")).toBeTruthy();
+	expect(screen.getByText("production")).toBeTruthy();
+});
+
 test("a rejected onDelete renders the error and keeps the confirm block", async () => {
 	const onDelete = async () => {
 		throw new Error("boom delete");
