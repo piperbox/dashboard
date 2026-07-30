@@ -41,8 +41,7 @@ test("fetchAppEnv unwraps the {env} envelope", async () => {
 });
 
 test("fetchAppEnv returns an empty record when the box omits env", async () => {
-	globalThis.fetch = (async () =>
-		Response.json({})) as unknown as typeof fetch;
+	globalThis.fetch = (async () => Response.json({})) as unknown as typeof fetch;
 	expect(await fetchAppEnv("cred", "b", "a")).toEqual({});
 });
 
