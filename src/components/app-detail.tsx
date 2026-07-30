@@ -14,7 +14,8 @@ export type AppDetailProps = {
 	app: App | null;
 	deployments: Deployment[];
 	domains?: AppDomainStatus[];
-	env?: Record<string, string>;
+	// null means this box's piperd predates the env endpoint.
+	env?: Record<string, string> | null;
 	fetchLogs: (id: string) => Promise<string>;
 	refresh: () => void;
 	onStop: () => Promise<void>;
@@ -95,6 +96,10 @@ export function AppDetail({
 	onRemoveDomain = async () => {},
 }: AppDetailProps) {
 	const [tab, setTab] = useState<TabId>("overview");
+	// Lives here, not in AppEnv, so it survives the env tab unmounting when the
+	// user switches tabs — env writes never touch the running container, so
+	// this is the only signal that a restart is still owed.
+	const [pendingEnv, setPendingEnv] = useState<string[]>([]);
 
 	if (!connected) {
 		return (
@@ -185,6 +190,8 @@ export function AppDetail({
 					appName={app.name}
 					status={app.status}
 					env={env}
+					pending={pendingEnv}
+					onPendingChange={setPendingEnv}
 					onSet={onSetEnv}
 					onRemove={onRemoveEnv}
 					onRestart={onRestart}
@@ -195,7 +202,6 @@ export function AppDetail({
 				<AppSettings
 					app={app}
 					base={base}
-					boxConnected={connected}
 					domains={domains}
 					onAddDomain={onAddDomain}
 					onRemoveDomain={onRemoveDomain}

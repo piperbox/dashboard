@@ -130,26 +130,43 @@ takes data and callbacks only — no server-fn imports:
 type AppEnvProps = {
   appName: string;
   status: string;
-  env: Record<string, string>;
+  // null means this box's piperd predates the env endpoint (404s), not that
+  // the app simply has no variables ({} means that — see Error handling).
+  env: Record<string, string> | null;
+  pending: string[];
+  onPendingChange: (next: string[]) => void;
   onSet: (key: string, value: string) => Promise<void>;
   onRemove: (key: string) => Promise<void>;
   onRestart: () => Promise<void>;
 };
 ```
 
-Local state: `reveal`, the key being edited, its draft value, the add-row's
-key/value, and `pendingKeys` — the set of keys written since mount, which drives
-both the banner and each row's `pending` badge.
+Local state: `reveal`, the key being edited, its draft value, and the add-row's
+key/value. `pendingKeys` — the set of keys written since mount, which drives
+both the banner and each row's `pending` badge — lives one level up, in
+`AppDetail`, and is passed down as `pending` / `onPendingChange`. Tab panels are
+conditionally mounted, so if `AppEnv` owned this state itself, switching away
+from the env tab and back would unmount it and silently drop the pending
+prompt — the one thing telling the user the running container is stale. Lifting
+it keeps `AppEnv` itself a pure presentational component.
+
+Residual limitation, honestly stated: this prompt is per-session. It does not
+survive a page reload, because piper stores no applied-generation marker —
+there is nothing on the box recording "these writes have been applied to the
+running container." A reload has no way to tell a stale container from a fresh
+one, so the banner resets. Follow-up: piper issue to add such a marker so the
+dashboard can rebuild pending state from the API instead of from render-time
+memory.
 
 **Table** (`Panel` + `PanelHeader`): columns key / value / actions, keys sorted
 alphabetically so the order is stable across writes (the API returns an unordered
 map).
 
-**Masking.** A key matching
-`/(SECRET|TOKEN|_KEY|KEY_|PASSWORD|CREDENTIAL|PRIVATE|DSN|DATABASE_URL)/i`
-carries a `secret` badge and renders its value as `•` × `min(length, 26)`;
-everything else renders plain. One `Reveal all` / `Hide values` toggle flips the
-masked ones. Editing a row always shows the real value.
+**Masking.** Every value is masked by default, rendered as `•` × `min(length,
+26)`; `Reveal all` / `Hide values` flips all of them at once. A key matching
+`/(SECRET|TOKEN|_KEY|KEY_|PASSWORD|CREDENTIAL|PRIVATE|DSN|DATABASE_URL)/i` also
+carries a `secret` badge — emphasis only, not a masking signal, since masking
+now applies uniformly. Editing a row always shows the real value.
 
 **Add row.** Key and value inputs with `Save` / `Cancel`. Validation runs
 client-side before any request and blocks `Save`, mirroring what the API would
@@ -197,6 +214,16 @@ and an inline `text-destructive` message, and every `catch` re-throws
 writes are one request per variable, a mid-sequence failure leaves earlier writes
 saved — the message names the key that failed rather than implying the whole edit
 rolled back.
+
+**The env endpoint is not on every box.** It shipped to piper's `main` but is in
+no release tag as of this writing, so a box running a released `piperd` 404s on
+`GET .../env`. The loader treats that rejection as non-fatal — it resolves `env`
+to `null` rather than rejecting the whole `Promise.all` — so the rest of the
+page (deployments, live log tail, stop/start/delete, domains) still renders.
+`AppEnv` renders `null` as a first-class state: a `HintBar` explaining the box's
+piperd needs upgrading, with no table, add button, or reveal toggle — never a
+top-level `RelayError` for what is really "this one feature isn't available
+here yet."
 
 ## Testing
 

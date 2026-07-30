@@ -1,6 +1,7 @@
 import { expect, mock, test } from "bun:test";
 import { act, fireEvent, render, screen } from "@testing-library/react";
-import { AppEnv } from "./app-env";
+import { useState } from "react";
+import { AppEnv, type AppEnvProps } from "./app-env";
 
 const env = {
 	NODE_ENV: "production",
@@ -11,18 +12,27 @@ const noopSet = async (_k: string, _v: string) => {};
 const noopRemove = async (_k: string) => {};
 const noopRestart = async () => {};
 
-function renderEnv(over: Partial<Parameters<typeof AppEnv>[0]> = {}) {
-	return render(
+// The pending set lives in the parent (AppDetail) so it survives a tab
+// switch; this harness stands in for that parent during tests.
+function Harness(over: Partial<AppEnvProps>) {
+	const [pending, setPending] = useState<string[]>([]);
+	return (
 		<AppEnv
 			appName="web"
 			status="running"
 			env={env}
+			pending={pending}
+			onPendingChange={setPending}
 			onSet={noopSet}
 			onRemove={noopRemove}
 			onRestart={noopRestart}
 			{...over}
-		/>,
+		/>
 	);
+}
+
+function renderEnv(over: Partial<AppEnvProps> = {}) {
+	return render(<Harness {...over} />);
 }
 
 test("lists keys alphabetically", () => {
@@ -33,18 +43,26 @@ test("lists keys alphabetically", () => {
 	expect(keys).toEqual(["DATABASE_URL", "NODE_ENV"]);
 });
 
-test("masks secret-looking values and reveals them on toggle", () => {
+test("masks every value by default, secret-shaped or not, and reveals them on toggle", () => {
 	renderEnv();
-	// NODE_ENV is not secret-shaped, so its value is always legible.
-	expect(screen.getByText("production")).toBeTruthy();
+	// Every value is masked by default, regardless of whether its key looks
+	// secret-shaped — the secret badge marks emphasis, not masking eligibility.
+	expect(screen.queryByText("production")).toBeNull();
 	expect(screen.queryByText(env.DATABASE_URL)).toBeNull();
 	expect(screen.getByText(/secret/i)).toBeTruthy();
 
 	fireEvent.click(screen.getByRole("button", { name: /reveal all/i }));
+	expect(screen.getByText("production")).toBeTruthy();
 	expect(screen.getByText(env.DATABASE_URL)).toBeTruthy();
 
 	fireEvent.click(screen.getByRole("button", { name: /hide values/i }));
+	expect(screen.queryByText("production")).toBeNull();
 	expect(screen.queryByText(env.DATABASE_URL)).toBeNull();
+});
+
+test("the secret badge only marks DATABASE_URL, not NODE_ENV", () => {
+	renderEnv();
+	expect(screen.getAllByText(/^secret$/i)).toHaveLength(1);
 });
 
 test("shows a hint instead of a table when the app has no variables", () => {
@@ -197,4 +215,13 @@ test("a stopped app is asked to start, not restart", async () => {
 	expect(screen.getByText(/start web to apply/i)).toBeTruthy();
 	expect(screen.getByRole("button", { name: /start app/i })).toBeTruthy();
 	expect(screen.queryByRole("button", { name: /restart app/i })).toBeNull();
+});
+
+test("env === null renders only an upgrade hint — no table, add button, or reveal toggle", () => {
+	renderEnv({ env: null });
+	expect(screen.getByText(/upgrade/i)).toBeTruthy();
+	expect(screen.queryByTestId("env-key")).toBeNull();
+	expect(screen.queryByRole("button", { name: /new variable/i })).toBeNull();
+	expect(screen.queryByRole("button", { name: /reveal all/i })).toBeNull();
+	expect(screen.queryByRole("button", { name: /hide values/i })).toBeNull();
 });

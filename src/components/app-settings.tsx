@@ -13,7 +13,6 @@ import type { App, AppDomainStatus } from "@/server/relay";
 export type AppSettingsProps = {
 	app: App;
 	base: string;
-	boxConnected: boolean;
 	domains: AppDomainStatus[];
 	onAddDomain: (domain: string) => Promise<void>;
 	onRemoveDomain: (domain: string) => Promise<void>;
@@ -78,7 +77,6 @@ function Section({
 export function AppSettings({
 	app,
 	base,
-	boxConnected,
 	domains,
 	onAddDomain,
 	onRemoveDomain,
@@ -111,9 +109,8 @@ export function AppSettings({
 						>
 							{base}
 						</Link>
-						<StatusDot status={boxConnected ? "ok" : "idle"}>
-							{boxConnected ? "connected" : "offline"}
-						</StatusDot>
+						{/* AppDetail only mounts this tab when the box is connected. */}
+						<StatusDot status="ok">connected</StatusDot>
 					</SettingRow>
 				</Panel>
 			</Section>
@@ -121,7 +118,7 @@ export function AppSettings({
 			<Section title="Git">
 				<Panel>
 					<SettingRow label="repository">
-						<span className="flex-1 text-primary">{app.repo}</span>
+						<span className="flex-1 text-foreground">{app.repo}</span>
 					</SettingRow>
 					<SettingRow label="tracked branch">
 						<span className="flex-1 text-foreground">{app.branch}</span>
@@ -202,11 +199,16 @@ function DomainsPanel({
 					<span className="ml-auto">dns · certificate</span>
 				</PanelHeader>
 				<Row>
-					<span
-						className={app.hostname ? "text-primary" : "text-muted-foreground"}
-					>
-						{app.hostname || "not deployed"}
-					</span>
+					{app.hostname ? (
+						<a
+							href={`https://${app.hostname}`}
+							className="text-primary no-underline hover:underline"
+						>
+							{app.hostname}
+						</a>
+					) : (
+						<span className="text-muted-foreground">not deployed</span>
+					)}
 					<span className="ml-auto inline-flex items-center gap-3">
 						<span>relay wildcard</span>
 						<StatusDot status="idle">managed</StatusDot>
@@ -214,7 +216,12 @@ function DomainsPanel({
 				</Row>
 				{domains.map((d) => (
 					<Row key={d.domain}>
-						<span className="text-primary">{d.domain}</span>
+						<a
+							href={`https://${d.domain}`}
+							className="text-primary no-underline hover:underline"
+						>
+							{d.domain}
+						</a>
 						<span className="ml-auto inline-flex items-center gap-3">
 							<span>{d.dnsOk ? "dns ok" : "dns pending"}</span>
 							<StatusDot status={domainDeviceStatus(d.status)}>
@@ -226,7 +233,7 @@ function DomainsPanel({
 								onClick={() =>
 									run(() => onRemoveDomain(d.domain), "couldn't remove domain")
 								}
-								className="text-fg-subtle hover:text-status-danger disabled:opacity-50"
+								className="text-fg-subtle hover:text-destructive disabled:opacity-50"
 							>
 								remove
 							</button>

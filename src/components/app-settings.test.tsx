@@ -41,7 +41,6 @@ async function renderSettings(
 			<AppSettings
 				app={app}
 				base="abc-zoe"
-				boxConnected={true}
 				domains={[]}
 				onAddDomain={noopDomain}
 				onRemoveDomain={noopDomain}
@@ -67,13 +66,24 @@ test("shows runtime and git facts read-only", async () => {
 	// Piper has no update endpoint for these, so no edit affordances ship.
 	expect(screen.queryByRole("button", { name: /^edit$/i })).toBeNull();
 	expect(screen.queryByRole("button", { name: /unlink/i })).toBeNull();
+	// The repo name isn't a link — there's no GitHub URL to build it from.
+	expect(screen.queryByRole("link", { name: "getpiper/example" })).toBeNull();
 });
 
-test("lists a custom domain with its dns and cert status", async () => {
+test("the app's hostname is a real link", async () => {
+	await renderSettings();
+	const link = screen.getByRole("link", {
+		name: "web-hash-zoe.public.example",
+	});
+	expect(link.getAttribute("href")).toBe("https://web-hash-zoe.public.example");
+});
+
+test("lists a custom domain with its dns and cert status, as a real link", async () => {
 	await renderSettings({
 		domains: [domain({ status: "issuing", dnsOk: false })],
 	});
-	expect(screen.getByText("shop.octo.dev")).toBeTruthy();
+	const link = screen.getByRole("link", { name: "shop.octo.dev" });
+	expect(link.getAttribute("href")).toBe("https://shop.octo.dev");
 	expect(screen.getByText(/dns pending/i)).toBeTruthy();
 	expect(screen.getByText(/issuing/i)).toBeTruthy();
 });

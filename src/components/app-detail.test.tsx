@@ -505,6 +505,65 @@ test("the env tab is behind its tab, not on overview", () => {
 	expect(screen.queryByText(/push to main/i)).toBeNull();
 });
 
+test("a null env (piperd predates the env endpoint) still lets the other tabs render", async () => {
+	await renderInRouter(
+		<AppDetail
+			appName="web"
+			base="abc-zoe"
+			connected={true}
+			app={app}
+			deployments={[]}
+			domains={[domain({ domain: "shop.octo.dev" })]}
+			env={null}
+			fetchLogs={emptyLogs}
+			refresh={noop}
+			onStop={noopAsync}
+			onDelete={noopAsync}
+		/>,
+	);
+	expect(screen.getByText(/never deployed/i)).toBeTruthy();
+
+	fireEvent.click(screen.getByRole("tab", { name: /deployments/i }));
+	expect(screen.getByText(/no deployments yet/i)).toBeTruthy();
+
+	fireEvent.click(screen.getByRole("tab", { name: /settings/i }));
+	expect(screen.getByText("shop.octo.dev")).toBeTruthy();
+	expect(screen.getByRole("button", { name: /delete app/i })).toBeTruthy();
+
+	fireEvent.click(screen.getByRole("tab", { name: /env/i }));
+	expect(screen.getByText(/upgrade/i)).toBeTruthy();
+});
+
+test("the env pending banner survives switching to another tab and back", async () => {
+	const onRemoveEnv = mock(async (_k: string) => {});
+	render(
+		<AppDetail
+			appName="web"
+			base="abc-zoe"
+			connected={true}
+			app={app}
+			deployments={[]}
+			env={{ NODE_ENV: "production" }}
+			fetchLogs={emptyLogs}
+			refresh={noop}
+			onStop={noopAsync}
+			onDelete={noopAsync}
+			onRemoveEnv={onRemoveEnv}
+		/>,
+	);
+	fireEvent.click(screen.getByRole("tab", { name: /env/i }));
+	await act(async () => {
+		fireEvent.click(screen.getAllByRole("button", { name: /^remove$/i })[0]);
+	});
+	expect(screen.getByText(/1 change pending/i)).toBeTruthy();
+
+	fireEvent.click(screen.getByRole("tab", { name: /overview/i }));
+	expect(screen.queryByText(/1 change pending/i)).toBeNull();
+
+	fireEvent.click(screen.getByRole("tab", { name: /env/i }));
+	expect(screen.getByText(/1 change pending/i)).toBeTruthy();
+});
+
 test("the settings tab holds the domains and the danger zone", async () => {
 	await renderInRouter(
 		<AppDetail

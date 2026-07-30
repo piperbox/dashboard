@@ -29,12 +29,19 @@ export const Route = createFileRoute("/boxes/$base_/apps/$app")({
 			? await Promise.all([
 					getDeployments({ data: { base: params.base, app: params.app } }),
 					getAppDomains({ data: { base: params.base, app: params.app } }),
-					getAppEnv({ data: { base: params.base, app: params.app } }),
+					getAppEnv({ data: { base: params.base, app: params.app } }).catch(
+						(err) => {
+							if (isRedirect(err)) throw err;
+							// A box on a piperd without the env endpoint 404s here; the
+							// rest of the page must still render.
+							return null;
+						},
+					),
 				])
-			: ([[], [], {}] as [
+			: ([[], [], null] as [
 					Deployment[],
 					AppDomainStatus[],
-					Record<string, string>,
+					Record<string, string> | null,
 				]);
 		return { box, app, deployments, domains, env };
 	},
@@ -90,12 +97,17 @@ function AppDetailPage() {
 			}}
 			onRestart={async () => {
 				// Env applies on the next start; a running container has to come
-				// down first.
-				if (app?.status !== "stopped") {
-					await stopAppFn({ data: { base, name: appName } });
+				// down first. Invalidate in `finally` so a partial restart (stop
+				// succeeds, start fails) still refreshes the status pill instead of
+				// leaving it showing "running" for a stopped container.
+				try {
+					if (app?.status !== "stopped") {
+						await stopAppFn({ data: { base, name: appName } });
+					}
+					await startAppFn({ data: { base, name: appName } });
+				} finally {
+					router.invalidate();
 				}
-				await startAppFn({ data: { base, name: appName } });
-				router.invalidate();
 			}}
 			onAddDomain={async (domain) => {
 				await addAppDomainFn({ data: { base, app: appName, domain } });
