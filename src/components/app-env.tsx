@@ -268,7 +268,7 @@ function EnvRow({
 					{name}
 				</span>
 				{secret && (
-					<span className="flex-shrink-0 rounded-[2px] border border-border bg-secondary px-1.5 py-px text-[10px] uppercase tracking-wide text-status-idle">
+					<span className="flex-shrink-0 rounded-[2px] border border-border bg-secondary px-1.5 py-px text-[10px] uppercase tracking-wide text-fg-subtle">
 						secret
 					</span>
 				)}
@@ -314,7 +314,7 @@ function EnvRow({
 						<span
 							className={cn(
 								"truncate",
-								masked ? "tracking-widest text-status-idle" : "",
+								masked ? "tracking-widest text-fg-subtle" : "",
 							)}
 						>
 							{masked ? "•".repeat(Math.min(value.length, 26)) : value}
@@ -332,7 +332,7 @@ function EnvRow({
 								setDraft(value);
 								setEditing(true);
 							}}
-							className="text-status-idle text-xs hover:text-primary"
+							className="text-fg-subtle text-xs hover:text-primary"
 						>
 							edit
 						</button>
@@ -340,7 +340,7 @@ function EnvRow({
 							type="button"
 							disabled={busy}
 							onClick={onRemove}
-							className="text-status-idle text-xs hover:text-status-danger disabled:opacity-50"
+							className="text-fg-subtle text-xs hover:text-destructive disabled:opacity-50"
 						>
 							remove
 						</button>
