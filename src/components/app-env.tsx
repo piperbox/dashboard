@@ -139,7 +139,11 @@ export function AppEnv({
 					>
 						{reveal ? "Hide values" : "Reveal all"}
 					</Button>
-					<Button type="button" bracketed={false} onClick={() => setAdding(true)}>
+					<Button
+						type="button"
+						bracketed={false}
+						onClick={() => setAdding(true)}
+					>
 						+ New variable
 					</Button>
 				</div>
@@ -201,7 +205,16 @@ export function AppEnv({
 				)}
 
 				{keys.map((key) => (
-					<EnvRow key={key} name={key} value={env[key] ?? ""} reveal={reveal} />
+					<EnvRow
+						key={key}
+						name={key}
+						value={env[key] ?? ""}
+						reveal={reveal}
+						pending={pending.includes(key)}
+						busy={busy}
+						onSave={(next) => write(key, () => onSet(key, next))}
+						onRemove={() => write(key, () => onRemove(key))}
+					/>
 				))}
 				{keys.length === 0 && !adding && (
 					<div className="px-3 py-4">
@@ -227,13 +240,24 @@ function EnvRow({
 	name,
 	value,
 	reveal,
+	pending,
+	busy,
+	onSave,
+	onRemove,
 }: {
 	name: string;
 	value: string;
 	reveal: boolean;
+	pending: boolean;
+	busy: boolean;
+	onSave: (next: string) => Promise<boolean>;
+	onRemove: () => Promise<boolean>;
 }) {
+	const [editing, setEditing] = useState(false);
+	const [draft, setDraft] = useState(value);
 	const secret = SECRET_RE.test(name);
 	const masked = secret && !reveal;
+
 	return (
 		<Row className="text-[13px]">
 			<span className="flex w-[250px] flex-shrink-0 items-center gap-2">
@@ -249,17 +273,80 @@ function EnvRow({
 					</span>
 				)}
 			</span>
-			<span className="flex min-w-0 flex-1 items-center gap-2">
-				<span
-					className={cn(
-						"truncate",
-						masked ? "tracking-widest text-status-idle" : "",
-					)}
-				>
-					{masked ? "•".repeat(Math.min(value.length, 26)) : value}
+			{editing ? (
+				<span className="flex flex-1 items-center gap-2">
+					<input
+						aria-label={`value for ${name}`}
+						value={draft}
+						onChange={(e) => setDraft(e.target.value)}
+						className={cn(
+							inputClass,
+							"flex-1 border-primary px-2 py-1 text-[13px]",
+						)}
+					/>
+					<Button
+						type="button"
+						size="sm"
+						bracketed={false}
+						disabled={busy}
+						onClick={async () => {
+							if (await onSave(draft)) setEditing(false);
+						}}
+					>
+						save
+					</Button>
+					<Button
+						type="button"
+						size="sm"
+						variant="neutral"
+						bracketed={false}
+						onClick={() => {
+							setEditing(false);
+							setDraft(value);
+						}}
+					>
+						cancel
+					</Button>
 				</span>
-			</span>
-			<span className="w-[110px] flex-shrink-0" />
+			) : (
+				<>
+					<span className="flex min-w-0 flex-1 items-center gap-2">
+						<span
+							className={cn(
+								"truncate",
+								masked ? "tracking-widest text-status-idle" : "",
+							)}
+						>
+							{masked ? "•".repeat(Math.min(value.length, 26)) : value}
+						</span>
+						{pending && (
+							<span className="flex-shrink-0 rounded-[2px] border border-status-warn/30 bg-status-warn/10 px-1.5 py-px text-[10px] uppercase tracking-wide text-status-warn">
+								pending
+							</span>
+						)}
+					</span>
+					<span className="flex w-[110px] flex-shrink-0 justify-end gap-2.5">
+						<button
+							type="button"
+							onClick={() => {
+								setDraft(value);
+								setEditing(true);
+							}}
+							className="text-status-idle text-xs hover:text-primary"
+						>
+							edit
+						</button>
+						<button
+							type="button"
+							disabled={busy}
+							onClick={onRemove}
+							className="text-status-idle text-xs hover:text-status-danger disabled:opacity-50"
+						>
+							remove
+						</button>
+					</span>
+				</>
+			)}
 		</Row>
 	);
 }

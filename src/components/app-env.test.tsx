@@ -128,3 +128,73 @@ test("Cancel closes the add form without calling onSet", () => {
 	expect(screen.queryByLabelText(/new variable key/i)).toBeNull();
 	expect(onSet).not.toHaveBeenCalled();
 });
+
+test("edit saves the new value through onSet", async () => {
+	const onSet = mock(async (_k: string, _v: string) => {});
+	renderEnv({ onSet });
+	fireEvent.click(screen.getAllByRole("button", { name: /^edit$/i })[1]);
+	fireEvent.change(screen.getByLabelText(/value for NODE_ENV/i), {
+		target: { value: "staging" },
+	});
+	await act(async () => {
+		fireEvent.click(screen.getByRole("button", { name: /^save$/i }));
+	});
+	expect(onSet).toHaveBeenCalledWith("NODE_ENV", "staging");
+});
+
+test("edit shows the real value even for a masked variable", () => {
+	renderEnv();
+	fireEvent.click(screen.getAllByRole("button", { name: /^edit$/i })[0]);
+	const input = screen.getByLabelText(
+		/value for DATABASE_URL/i,
+	) as HTMLInputElement;
+	expect(input.value).toBe(env.DATABASE_URL);
+});
+
+test("remove calls onRemove and prompts for a restart", async () => {
+	const onRemove = mock(async (_k: string) => {});
+	renderEnv({ onRemove });
+	await act(async () => {
+		fireEvent.click(screen.getAllByRole("button", { name: /^remove$/i })[1]);
+	});
+	expect(onRemove).toHaveBeenCalledWith("NODE_ENV");
+	expect(screen.getByText(/1 change pending/i)).toBeTruthy();
+});
+
+test("a successful restart clears the pending banner", async () => {
+	const onRestart = mock(async () => {});
+	renderEnv({ onRestart });
+	await act(async () => {
+		fireEvent.click(screen.getAllByRole("button", { name: /^remove$/i })[1]);
+	});
+	await act(async () => {
+		fireEvent.click(screen.getByRole("button", { name: /restart app/i }));
+	});
+	expect(onRestart).toHaveBeenCalledTimes(1);
+	expect(screen.queryByText(/pending/i)).toBeNull();
+});
+
+test("a failed restart keeps the banner and shows the error", async () => {
+	const onRestart = async () => {
+		throw new Error("box is offline");
+	};
+	renderEnv({ onRestart });
+	await act(async () => {
+		fireEvent.click(screen.getAllByRole("button", { name: /^remove$/i })[1]);
+	});
+	await act(async () => {
+		fireEvent.click(screen.getByRole("button", { name: /restart app/i }));
+	});
+	expect(screen.getByText(/box is offline/i)).toBeTruthy();
+	expect(screen.getByText(/1 change pending/i)).toBeTruthy();
+});
+
+test("a stopped app is asked to start, not restart", async () => {
+	renderEnv({ status: "stopped" });
+	await act(async () => {
+		fireEvent.click(screen.getAllByRole("button", { name: /^remove$/i })[1]);
+	});
+	expect(screen.getByText(/start web to apply/i)).toBeTruthy();
+	expect(screen.getByRole("button", { name: /start app/i })).toBeTruthy();
+	expect(screen.queryByRole("button", { name: /restart app/i })).toBeNull();
+});
