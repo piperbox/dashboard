@@ -603,6 +603,91 @@ export async function removeAppDomain(
 	}
 }
 
+// Per-app environment variables (piper #441). Values come back in full
+// plaintext — the endpoint is admin-bearer-authed and single-tenant, so any
+// masking is a display choice, not a boundary. Writes never touch the running
+// container: they apply on the app's next deploy or restart.
+export async function fetchAppEnv(
+	credential: string,
+	base: string,
+	app: string,
+): Promise<Record<string, string>> {
+	const res = await fetch(
+		`${relayUrl()}/agents/${encodeURIComponent(base)}/v1/apps/${encodeURIComponent(
+			app,
+		)}/env`,
+		{ headers: { Authorization: `Bearer ${credential}` } },
+	);
+	if (res.status === 401) {
+		throw new RelayAuthError("relay rejected the session credential");
+	}
+	if (res.status === 502 || res.status === 503) {
+		throw new BoxOfflineError(`box ${base} is offline`);
+	}
+	if (!res.ok) {
+		const msg = (await res.text()).trim();
+		throw new Error(msg || `relay list app env returned ${res.status}`);
+	}
+	const body = (await res.json()) as { env?: Record<string, string> };
+	return body.env ?? {};
+}
+
+export async function setAppEnv(
+	credential: string,
+	base: string,
+	app: string,
+	key: string,
+	value: string,
+): Promise<void> {
+	const res = await fetch(
+		`${relayUrl()}/agents/${encodeURIComponent(base)}/v1/apps/${encodeURIComponent(
+			app,
+		)}/env`,
+		{
+			method: "POST",
+			headers: {
+				Authorization: `Bearer ${credential}`,
+				"Content-Type": "application/json",
+			},
+			body: JSON.stringify({ key, value }),
+		},
+	);
+	if (res.status === 401) {
+		throw new RelayAuthError("relay rejected the session credential");
+	}
+	if (res.status === 502 || res.status === 503) {
+		throw new BoxOfflineError(`box ${base} is offline`);
+	}
+	if (res.status !== 204) {
+		const msg = (await res.text()).trim();
+		throw new Error(msg || `relay set app env returned ${res.status}`);
+	}
+}
+
+export async function removeAppEnv(
+	credential: string,
+	base: string,
+	app: string,
+	key: string,
+): Promise<void> {
+	const res = await fetch(
+		`${relayUrl()}/agents/${encodeURIComponent(base)}/v1/apps/${encodeURIComponent(
+			app,
+		)}/env/${encodeURIComponent(key)}`,
+		{ method: "DELETE", headers: { Authorization: `Bearer ${credential}` } },
+	);
+	if (res.status === 401) {
+		throw new RelayAuthError("relay rejected the session credential");
+	}
+	if (res.status === 502 || res.status === 503) {
+		throw new BoxOfflineError(`box ${base} is offline`);
+	}
+	if (res.status !== 204) {
+		const msg = (await res.text()).trim();
+		throw new Error(msg || `relay remove app env returned ${res.status}`);
+	}
+}
+
 export type BoxAppDomains = {
 	box: BoxWithApps;
 	// app name → its custom domains. Empty record for offline boxes.
