@@ -113,10 +113,18 @@ content. The hide-then-animate runs in `useLayoutEffect` rather than
 `useEffect`, so the hidden state lands before first paint and there is no
 visible flash of content being hidden.
 
-Under `prefers-reduced-motion: reduce`, matching the design: the hero entrance
-and scroll reveals still run; every infinite loop (heartbeat, chips, cipher
-churn, plaintext pulse) is skipped. The aura's CSS animation is also disabled.
-A reduced-motion visitor must never see a blank or partial page.
+Under `prefers-reduced-motion: reduce` the hook returns before touching
+anything: nothing is hidden, no timeline starts, no observer is registered. The
+aura's CSS animation is disabled by a media query in `styles.css`.
+
+This **deviates from the design file**, which skips only the infinite loops and
+still runs the hero entrance and scroll reveals. Two reasons to go further.
+First, correctness: the design hides reveal targets with `opacity: 0` and
+depends on `IntersectionObserver` firing to bring them back, so any failure in
+that path leaves a reduced-motion visitor on a blank page. Second, intent: the
+entrance is a `translateY` — it is movement, which is the thing the media query
+asks us not to do. Skipping outright is both safer and more honest to the
+preference, and it makes the behavior trivially assertable in a test.
 
 ## Responsive behavior
 
