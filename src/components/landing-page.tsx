@@ -258,7 +258,7 @@ function HowSection() {
 					Every push builds your Dockerfile, health-checks it, and serves it at
 					your domain.
 				</p>
-				<span data-lp-reveal>
+				<span data-lp-reveal className="inline-block">
 					<CopyInstallButton variant="primary" size="lg" />
 				</span>
 			</div>

@@ -79,7 +79,6 @@ export function useLandingAnimations(rootRef: RefObject<HTMLElement | null>) {
 		}
 
 		const revealables = root.querySelectorAll<HTMLElement>("[data-lp-reveal]");
-		for (const el of revealables) el.style.opacity = "0";
 		let batch: HTMLElement[] = [];
 		const io = new IntersectionObserver(
 			(entries) => {
@@ -107,6 +106,7 @@ export function useLandingAnimations(rootRef: RefObject<HTMLElement | null>) {
 			},
 			{ threshold: 0.25, rootMargin: "0px 0px -8% 0px" },
 		);
+		for (const el of revealables) el.style.opacity = "0";
 		for (const el of revealables) io.observe(el);
 
 		// Ciphertext chips riding each connector. Injected rather than authored

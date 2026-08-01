@@ -35,11 +35,12 @@ The markup tasks (1–4) add these attributes; the motion tasks (5–6) consume 
 | `data-lp-aura` | Task 5 | CSS `lpAura` opacity breathe (no JS) |
 | `data-lp-pulse` | Task 5 | Status-dot heartbeat `box-shadow` loop |
 | `data-lp-reveal` | Task 5 | Scroll reveal via `IntersectionObserver` |
-| `data-lp-type` | Task 6 | Typewriter over the attribute's own value |
+| `data-lp-type` | Task 6 | Typewriter over the attribute's own value — fires when an enclosing `data-lp-reveal` ancestor is revealed, not independently |
 | `data-lp-track` + `data-dir` | Task 6 | Ciphertext chips riding a connector |
 | `data-lp-cipher` | Task 6 | Glyph churn — what the relay "sees" |
 | `data-lp-plain` | Task 6 | Opacity pulse — what the box "reads" |
 | `data-lp-step`, `data-lp-open`, `data-lp-lock` | Task 6 | Mobile relay-step cycle |
+| `data-lp-diagram`, `data-lp-steps` | Tests only | No motion — test selectors only |
 
 ## File Structure
 

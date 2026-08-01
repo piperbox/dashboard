@@ -57,12 +57,11 @@ export const INSTALL_CMD = "curl -fsSL https://get.openpiper.dev/install.sh | sh
 The design hardcodes `get.piperbox.dev`. **Decision: adopt `get.piperbox.dev`**
 and update the comment accordingly.
 
-**Recorded risk:** neither host appears anywhere in `piperbox/piper` — its
-README and `docs/getting-started.md` document
-`https://raw.githubusercontent.com/piperbox/piper/main/install.sh`. If
-`get.piperbox.dev` is not repointed by the time this ships, the hero's primary
-CTA is a dead URL. Reverting is a one-line change to `links.ts` plus two test
-assertions.
+**Verified status:** `https://get.piperbox.dev/install.sh` returns 200 and
+serves the real installer, while `get.openpiper.dev` — the host this change
+replaces — is NXDOMAIN. The new host is live and the old one no longer
+resolves, so this change fixed an already-dead CTA rather than introducing a
+risk.
 
 ## Structure
 
@@ -93,10 +92,11 @@ set, queried inside the ref'd root:
 | `data-lp-hero` | Entrance: opacity + translateY, 90ms stagger |
 | `data-lp-pulse` | Status-dot heartbeat, `box-shadow` loop |
 | `data-lp-reveal` | Scroll reveal via `IntersectionObserver`, batched with stagger |
-| `data-lp-type` | Typewriter over the element's own `data-lp-type` value |
+| `data-lp-type` | Typewriter over the attribute's own value — fires when an enclosing `data-lp-reveal` ancestor is revealed, not independently |
 | `data-lp-track` + `data-dir` | Ciphertext chips riding a connector, direction-aware |
 | `data-lp-cipher` | Glyph churn — what the relay "sees" |
 | `data-lp-plain` | Opacity pulse — what the box "reads" |
+| `data-lp-diagram`, `data-lp-steps` | Tests only — no motion |
 
 No component imports `animejs`, and the hook imports no component. The entire
 motion layer can be stubbed or deleted without touching markup.
