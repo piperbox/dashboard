@@ -347,6 +347,8 @@ test("fetchDeployments GETs the deployments path and maps capitalized keys", asy
 				ContainerID: "ctr",
 				HostPort: 8081,
 				Status: "running",
+				// Production's URL lives on the app row, so this is always "".
+				Hostname: "",
 				CreatedAt: "2026-07-11T10:00:00Z",
 			},
 			{
@@ -357,7 +359,19 @@ test("fetchDeployments GETs the deployments path and maps capitalized keys", asy
 				ContainerID: "ctr2",
 				HostPort: 8082,
 				Status: "failed",
+				Hostname: "",
 				CreatedAt: "2026-07-11T09:00:00Z",
+			},
+			{
+				ID: "dep-ghi789",
+				App: "web",
+				PR: 12,
+				ImageID: "img3",
+				ContainerID: "ctr3",
+				HostPort: 8083,
+				Status: "running",
+				Hostname: "pr12-855d1432-zoe.public.example",
+				CreatedAt: "2026-07-11T11:00:00Z",
 			},
 		]);
 	}) as typeof fetch;
@@ -376,13 +390,22 @@ test("fetchDeployments GETs the deployments path and maps capitalized keys", asy
 			id: "dep-abc123",
 			pr: 0,
 			status: "running",
+			hostname: "",
 			createdAt: "2026-07-11T10:00:00Z",
 		},
 		{
 			id: "dep-def456",
 			pr: 12,
 			status: "failed",
+			hostname: "",
 			createdAt: "2026-07-11T09:00:00Z",
+		},
+		{
+			id: "dep-ghi789",
+			pr: 12,
+			status: "running",
+			hostname: "pr12-855d1432-zoe.public.example",
+			createdAt: "2026-07-11T11:00:00Z",
 		},
 	]);
 });

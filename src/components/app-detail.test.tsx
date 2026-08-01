@@ -23,6 +23,7 @@ const dep = (over: Partial<Deployment>): Deployment => ({
 	id: "dep-abc1234",
 	pr: 0,
 	status: "running",
+	hostname: "",
 	createdAt: "2026-07-11T10:00:00Z",
 	...over,
 });
@@ -162,6 +163,99 @@ test("lists deployments and distinguishes production from PR previews", () => {
 	expect(prLink.getAttribute("href")).toBe(
 		"https://github.com/getpiper/example/pull/12",
 	);
+});
+
+test("links a running preview to the URL it is served at", () => {
+	render(
+		<AppDetail
+			appName="web"
+			base="abc-zoe"
+			connected={true}
+			app={app}
+			deployments={[
+				dep({
+					id: "dep-prev0002",
+					pr: 12,
+					status: "running",
+					hostname: "pr12-855d1432-zoe.public.example",
+				}),
+			]}
+			fetchLogs={emptyLogs}
+			refresh={noop}
+			onStop={noopAsync}
+			onDelete={noopAsync}
+		/>,
+	);
+	fireEvent.click(screen.getByRole("tab", { name: /deployments/i }));
+	const preview = screen.getByRole("link", {
+		name: "pr12-855d1432-zoe.public.example",
+	});
+	expect(preview.getAttribute("href")).toBe(
+		"https://pr12-855d1432-zoe.public.example",
+	);
+});
+
+// Teardown deregisters the hostname at the relay but deliberately leaves it on
+// the row so the history survives, so a retired preview still carries a URL
+// that no longer resolves. Linking it would hand the user a dead link.
+test("does not link a preview that is no longer running", () => {
+	render(
+		<AppDetail
+			appName="web"
+			base="abc-zoe"
+			connected={true}
+			app={app}
+			deployments={[
+				dep({
+					id: "dep-prev0002",
+					pr: 12,
+					status: "stopped",
+					hostname: "pr12-855d1432-zoe.public.example",
+				}),
+			]}
+			fetchLogs={emptyLogs}
+			refresh={noop}
+			onStop={noopAsync}
+			onDelete={noopAsync}
+		/>,
+	);
+	fireEvent.click(screen.getByRole("tab", { name: /deployments/i }));
+	expect(
+		screen.queryByRole("link", {
+			name: "pr12-855d1432-zoe.public.example",
+		}),
+	).toBeNull();
+	// The PR itself is still worth linking — only the preview URL is dead.
+	expect(screen.getByRole("link", { name: /PR #12/ })).toBeTruthy();
+});
+
+// The box records the hostname best-effort: a store write that fails is logged
+// and the preview serves anyway, so a running preview can carry no hostname.
+test("does not link a running preview that has no recorded hostname", () => {
+	render(
+		<AppDetail
+			appName="web"
+			base="abc-zoe"
+			connected={true}
+			app={app}
+			deployments={[
+				dep({
+					id: "dep-prev0002",
+					pr: 12,
+					status: "running",
+					hostname: "",
+				}),
+			]}
+			fetchLogs={emptyLogs}
+			refresh={noop}
+			onStop={noopAsync}
+			onDelete={noopAsync}
+		/>,
+	);
+	fireEvent.click(screen.getByRole("tab", { name: /deployments/i }));
+	expect(
+		screen.getAllByRole("link").map((a) => a.getAttribute("href")),
+	).not.toContain("https://");
 });
 
 test("expanding a deployment fetches and shows its logs", async () => {
