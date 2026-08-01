@@ -152,3 +152,19 @@ pre code {
     color: var(--foreground);
   }
 }
+
+@keyframes lpAura {
+  0%,
+  100% {
+    opacity: 0.8;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  [data-lp-aura] {
+    animation: none;
+  }
+}

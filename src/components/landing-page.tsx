@@ -1,6 +1,8 @@
 import { Link } from "@tanstack/react-router";
 import { useCallback, useEffect, useRef, useState } from "react";
+import { LandingRelay } from "@/components/landing-relay";
 import { Button, buttonVariants } from "@/components/ui/button";
+import { useLandingAnimations } from "@/components/use-landing-animations";
 import { INSTALL_CMD, REPO_URL } from "@/lib/links";
 
 const whyCards = [
@@ -24,18 +26,18 @@ const whyCards = [
 const steps = [
 	{
 		n: "01",
-		cmd: "piper connect",
-		body: "Enroll your box on the public relay (or your own). One outbound tunnel, no ports opened.",
+		cmd: "curl -fsSL …/install.sh | sh",
+		body: "Installs on a real upgrade channel — apt on Debian/Ubuntu/Raspberry Pi OS, Homebrew on macOS. Verified binaries either way.",
 	},
 	{
 		n: "02",
-		cmd: "piper app link myapp --repo owner/name",
-		body: "Link a repo through your own per-user GitHub App — the private key never leaves your box.",
+		cmd: "piper login",
+		body: "GitHub sign-in, and it claims this box on the public relay. piperd applies the enrollment itself — no sudo, no restart.",
 	},
 	{
 		n: "03",
-		cmd: "git push",
-		body: "Builds the Dockerfile, health-checks the container, and publishes it live at https://myapp.your-domain.",
+		cmd: "piper deploy blog --path .",
+		body: "Builds the Dockerfile, health-checks it, and serves it at https://<hash>-<you>.public.getpiper.dev — no port forwarding, no domain required.",
 	},
 ];
 
@@ -69,6 +71,7 @@ function CopyInstallButton({
 			variant={variant}
 			size={size}
 			bracketed={false}
+			className={variant === "neutral" ? "w-full md:w-auto" : undefined}
 			onClick={() => copy(INSTALL_CMD)}
 		>
 			{copied ? "✓ copied" : "copy install command"}
@@ -85,7 +88,7 @@ function Header() {
 			>
 				pi@<span className="text-primary">piper</span>
 			</a>
-			<nav className="flex gap-[22px] px-[22px] text-[13px]">
+			<nav className="hidden gap-[22px] px-[22px] text-[13px] md:flex">
 				<a className="text-muted-foreground" href="#why">
 					why piper
 				</a>
@@ -123,37 +126,60 @@ function Header() {
 
 function Hero() {
 	return (
-		<div className="bg-[radial-gradient(120%_90%_at_50%_-10%,rgba(255,180,84,0.09),transparent_60%)] pt-[88px] pb-[60px] text-center">
-			<div className="mb-[26px] inline-flex items-center gap-2 rounded-full border border-border px-[14px] py-[5px] text-[11px] uppercase tracking-[0.14em] text-muted-foreground">
-				<span className="h-1.5 w-1.5 rounded-full bg-status-ok" /> the paas that
-				runs on hardware you own
-			</div>
-			<h1 className="mx-auto max-w-[860px] text-[52px] font-bold leading-[1.1] tracking-[-0.015em] text-balance">
-				Deploy to your own box
-				<br />
-				with one <span className="text-primary">git push</span>.
-			</h1>
-			<p className="mx-auto mt-6 max-w-[600px] text-base leading-[1.6] text-muted-foreground text-pretty">
-				Open-source, developer-first, zero-trust. Piper turns any box you own
-				into a real deploy target with a public HTTPS URL — a cloud VM, an old
-				laptop, a home server, even a Raspberry Pi behind CGNAT — without
-				exposing your network to anyone, including the relay.
-			</p>
-			<div className="mt-[34px] flex justify-center">
-				<div className="inline-flex flex-wrap items-center justify-center gap-3 rounded-[2px] border border-border bg-card px-[14px] py-[11px] text-[13.5px]">
-					<span className="text-primary">$</span>
-					<span>{INSTALL_CMD}</span>
-					<CopyInstallButton variant="neutral" size="sm" />
+		<div className="relative pt-[88px] pb-[60px] text-center">
+			<div
+				data-lp-aura
+				className="pointer-events-none absolute inset-x-0 -top-10 h-[420px] animate-[lpAura_11s_ease-in-out_infinite] bg-[radial-gradient(120%_90%_at_50%_-10%,rgba(255,180,84,0.09),transparent_60%)]"
+			/>
+			<div className="relative">
+				<div
+					data-lp-hero
+					className="mb-[26px] inline-flex items-center gap-2 rounded-full border border-border px-[14px] py-[5px] text-[11px] uppercase tracking-[0.14em] text-muted-foreground"
+				>
+					<span
+						data-lp-pulse
+						className="h-1.5 w-1.5 rounded-full bg-status-ok"
+					/>{" "}
+					the paas that runs on hardware you own
 				</div>
-			</div>
-			<div className="mt-4 flex justify-center gap-5 text-[13px] text-muted-foreground">
-				<a href={REPO_URL} target="_blank" rel="noreferrer">
-					read the docs →
-				</a>
-				<span className="text-border">|</span>
-				<a href={REPO_URL} target="_blank" rel="noreferrer">
-					★ star on github
-				</a>
+				<h1
+					data-lp-hero
+					className="mx-auto max-w-[860px] text-[32px] font-bold leading-[1.1] tracking-[-0.015em] text-balance md:text-[42px] lg:text-[52px]"
+				>
+					Deploy to your own box
+					<br />
+					with one <span className="text-primary">git push</span>.
+				</h1>
+				<p
+					data-lp-hero
+					className="mx-auto mt-6 max-w-[600px] text-base leading-[1.6] text-muted-foreground text-pretty"
+				>
+					Open-source, developer-first, zero-trust. Piper turns any box you own
+					into a real deploy target with a public HTTPS URL — a cloud VM, an old
+					laptop, a home server, even a Raspberry Pi behind CGNAT — without
+					exposing your network to anyone, including the relay.
+				</p>
+				<div data-lp-hero className="mt-[34px] flex justify-center">
+					<div className="flex w-full flex-col items-stretch gap-2.5 rounded-[2px] border border-border bg-card px-[14px] py-[11px] text-xs md:inline-flex md:w-auto md:flex-row md:items-center md:gap-3 md:text-[13.5px]">
+						<span className="flex min-w-0 max-w-full items-center gap-2.5 overflow-x-auto whitespace-nowrap md:whitespace-normal">
+							<span className="text-primary">$</span>
+							<span>{INSTALL_CMD}</span>
+						</span>
+						<CopyInstallButton variant="neutral" size="sm" />
+					</div>
+				</div>
+				<div
+					data-lp-hero
+					className="mt-4 flex justify-center gap-5 text-[13px] text-muted-foreground"
+				>
+					<a href={REPO_URL} target="_blank" rel="noreferrer">
+						read the docs →
+					</a>
+					<span className="text-border">|</span>
+					<a href={REPO_URL} target="_blank" rel="noreferrer">
+						★ star on github
+					</a>
+				</div>
 			</div>
 		</div>
 	);
@@ -163,10 +189,13 @@ function WhySection() {
 	return (
 		<div id="why" className="py-16">
 			<div className="mb-9 text-center">
-				<div className="mb-2 text-[11px] uppercase tracking-[0.16em] text-primary">
+				<div
+					data-lp-reveal
+					className="mb-2 text-[11px] uppercase tracking-[0.16em] text-primary"
+				>
 					why piper
 				</div>
-				<h2 className="text-[26px] font-semibold">
+				<h2 data-lp-reveal className="text-[26px] font-semibold">
 					Self-hosting without the tradeoffs
 				</h2>
 			</div>
@@ -174,7 +203,8 @@ function WhySection() {
 				{whyCards.map((c) => (
 					<div
 						key={c.title}
-						className="rounded-[2px] border border-border bg-card p-6 text-center"
+						data-lp-reveal
+						className="rounded-[2px] border border-border bg-card p-6 text-center transition-colors duration-200 hover:border-primary/40"
 					>
 						<div className="mb-[14px] text-[20px] text-primary">{c.glyph}</div>
 						<div className="mb-[10px] text-[15px] font-semibold">{c.title}</div>
@@ -188,65 +218,17 @@ function WhySection() {
 	);
 }
 
-function RelaySection() {
-	return (
-		<div className="py-16">
-			<div className="mb-9 text-center">
-				<div className="mb-2 text-[11px] uppercase tracking-[0.16em] text-primary">
-					the relay
-				</div>
-				<h2 className="text-[26px] font-semibold">
-					Public traffic, private network
-				</h2>
-				<p className="mx-auto mt-[14px] max-w-[600px] text-sm leading-[1.6] text-muted-foreground text-pretty">
-					TLS terminates on your box; the relay splices ciphertext by SNI over
-					an outbound tunnel — so it works behind CGNAT and never sees
-					plaintext.
-				</p>
-			</div>
-			<div className="flex flex-wrap items-stretch justify-center text-left">
-				<div className="min-w-[220px] flex-1 rounded-[2px] border border-border bg-card p-[18px]">
-					<div className="mb-2 text-[11px] uppercase tracking-[0.08em] text-status-idle">
-						visitors & cli
-					</div>
-					<div className="text-[13px] text-foreground">https://app.you.dev</div>
-				</div>
-				<div className="flex min-w-[78px] flex-col items-center justify-center p-3 text-[12px] text-foreground">
-					HTTPS →
-				</div>
-				<div className="min-w-[220px] flex-[1.15] rounded-[2px] border border-primary bg-primary/[0.07] p-[18px]">
-					<div className="mb-2 text-[11px] uppercase tracking-[0.08em] text-primary">
-						piper-relay · cloud
-					</div>
-					<div className="text-[13px] text-foreground">
-						SNI passthrough — ciphertext only
-					</div>
-				</div>
-				<div className="flex min-w-[78px] flex-col items-center justify-center p-3 text-center text-[11px] text-foreground">
-					← tunnel
-					<span className="mt-[3px] text-status-idle">(CGNAT)</span>
-				</div>
-				<div className="min-w-[220px] flex-[1.15] rounded-[2px] border border-border bg-card p-[18px]">
-					<div className="mb-2 text-[11px] uppercase tracking-[0.08em] text-status-ok">
-						your box · piperd
-					</div>
-					<div className="text-[13px] text-foreground">
-						Docker · Caddy · TLS ends here
-					</div>
-				</div>
-			</div>
-		</div>
-	);
-}
-
 function HowSection() {
 	return (
 		<div id="how" className="py-16">
 			<div className="mb-9 text-center">
-				<div className="mb-2 text-[11px] uppercase tracking-[0.16em] text-primary">
+				<div
+					data-lp-reveal
+					className="mb-2 text-[11px] uppercase tracking-[0.16em] text-primary"
+				>
 					how it works
 				</div>
-				<h2 className="text-[26px] font-semibold">
+				<h2 data-lp-reveal className="text-[26px] font-semibold">
 					Three commands to a live URL
 				</h2>
 			</div>
@@ -254,12 +236,13 @@ function HowSection() {
 				{steps.map((s) => (
 					<div
 						key={s.n}
-						className="rounded-[2px] border border-border bg-card p-[22px]"
+						data-lp-reveal
+						className="rounded-[2px] border border-border bg-card p-[22px] transition-colors duration-200 hover:border-primary/40"
 					>
 						<div className="mb-3 text-[12px] text-status-idle">step {s.n}</div>
 						<div className="mb-[10px] text-[13.5px] text-foreground">
 							<span className="text-primary">$ </span>
-							{s.cmd}
+							<span data-lp-type={s.cmd}>{s.cmd}</span>
 						</div>
 						<p className="text-[13px] leading-[1.6] text-muted-foreground text-pretty">
 							{s.body}
@@ -268,11 +251,16 @@ function HowSection() {
 				))}
 			</div>
 			<div className="mt-11 border-t border-border pt-[34px] text-center">
-				<p className="mx-auto mb-[18px] text-sm text-muted-foreground text-pretty">
+				<p
+					data-lp-reveal
+					className="mx-auto mb-[18px] text-sm text-muted-foreground text-pretty"
+				>
 					Every push builds your Dockerfile, health-checks it, and serves it at
 					your domain.
 				</p>
-				<CopyInstallButton variant="primary" size="lg" />
+				<span data-lp-reveal className="inline-block">
+					<CopyInstallButton variant="primary" size="lg" />
+				</span>
 			</div>
 		</div>
 	);
@@ -313,15 +301,17 @@ function Footer() {
 }
 
 export function LandingPage() {
+	const rootRef = useRef<HTMLDivElement>(null);
+	useLandingAnimations(rootRef);
 	return (
-		<div className="min-h-screen bg-background">
+		<div ref={rootRef} className="min-h-screen bg-background">
 			<Header />
-			<div id="top" className="mx-auto max-w-[1080px] px-6">
+			<div id="top" className="mx-auto max-w-[1080px] px-[18px] lg:px-6">
 				<Hero />
 				<div className="border-t border-border" />
 				<WhySection />
 				<div className="border-t border-border" />
-				<RelaySection />
+				<LandingRelay />
 				<div className="border-t border-border" />
 				<HowSection />
 			</div>
