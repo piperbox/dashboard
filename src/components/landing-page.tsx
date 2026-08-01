@@ -24,18 +24,18 @@ const whyCards = [
 const steps = [
 	{
 		n: "01",
-		cmd: "piper connect",
-		body: "Enroll your box on the public relay (or your own). One outbound tunnel, no ports opened.",
+		cmd: "curl -fsSL …/install.sh | sh",
+		body: "Installs on a real upgrade channel — apt on Debian/Ubuntu/Raspberry Pi OS, Homebrew on macOS. Verified binaries either way.",
 	},
 	{
 		n: "02",
-		cmd: "piper app link myapp --repo owner/name",
-		body: "Link a repo through your own per-user GitHub App — the private key never leaves your box.",
+		cmd: "piper login",
+		body: "GitHub sign-in, and it claims this box on the public relay. piperd applies the enrollment itself — no sudo, no restart.",
 	},
 	{
 		n: "03",
-		cmd: "git push",
-		body: "Builds the Dockerfile, health-checks the container, and publishes it live at https://myapp.your-domain.",
+		cmd: "piper deploy blog --path .",
+		body: "Builds the Dockerfile, health-checks it, and serves it at https://<hash>-<you>.public.getpiper.dev — no port forwarding, no domain required.",
 	},
 ];
 
@@ -163,10 +163,13 @@ function WhySection() {
 	return (
 		<div id="why" className="py-16">
 			<div className="mb-9 text-center">
-				<div className="mb-2 text-[11px] uppercase tracking-[0.16em] text-primary">
+				<div
+					data-lp-reveal
+					className="mb-2 text-[11px] uppercase tracking-[0.16em] text-primary"
+				>
 					why piper
 				</div>
-				<h2 className="text-[26px] font-semibold">
+				<h2 data-lp-reveal className="text-[26px] font-semibold">
 					Self-hosting without the tradeoffs
 				</h2>
 			</div>
@@ -174,7 +177,8 @@ function WhySection() {
 				{whyCards.map((c) => (
 					<div
 						key={c.title}
-						className="rounded-[2px] border border-border bg-card p-6 text-center"
+						data-lp-reveal
+						className="rounded-[2px] border border-border bg-card p-6 text-center transition-colors duration-200 hover:border-primary/40"
 					>
 						<div className="mb-[14px] text-[20px] text-primary">{c.glyph}</div>
 						<div className="mb-[10px] text-[15px] font-semibold">{c.title}</div>
@@ -243,10 +247,13 @@ function HowSection() {
 	return (
 		<div id="how" className="py-16">
 			<div className="mb-9 text-center">
-				<div className="mb-2 text-[11px] uppercase tracking-[0.16em] text-primary">
+				<div
+					data-lp-reveal
+					className="mb-2 text-[11px] uppercase tracking-[0.16em] text-primary"
+				>
 					how it works
 				</div>
-				<h2 className="text-[26px] font-semibold">
+				<h2 data-lp-reveal className="text-[26px] font-semibold">
 					Three commands to a live URL
 				</h2>
 			</div>
@@ -254,12 +261,13 @@ function HowSection() {
 				{steps.map((s) => (
 					<div
 						key={s.n}
-						className="rounded-[2px] border border-border bg-card p-[22px]"
+						data-lp-reveal
+						className="rounded-[2px] border border-border bg-card p-[22px] transition-colors duration-200 hover:border-primary/40"
 					>
 						<div className="mb-3 text-[12px] text-status-idle">step {s.n}</div>
 						<div className="mb-[10px] text-[13.5px] text-foreground">
 							<span className="text-primary">$ </span>
-							{s.cmd}
+							<span data-lp-type={s.cmd}>{s.cmd}</span>
 						</div>
 						<p className="text-[13px] leading-[1.6] text-muted-foreground text-pretty">
 							{s.body}
@@ -268,11 +276,16 @@ function HowSection() {
 				))}
 			</div>
 			<div className="mt-11 border-t border-border pt-[34px] text-center">
-				<p className="mx-auto mb-[18px] text-sm text-muted-foreground text-pretty">
+				<p
+					data-lp-reveal
+					className="mx-auto mb-[18px] text-sm text-muted-foreground text-pretty"
+				>
 					Every push builds your Dockerfile, health-checks it, and serves it at
 					your domain.
 				</p>
-				<CopyInstallButton variant="primary" size="lg" />
+				<span data-lp-reveal>
+					<CopyInstallButton variant="primary" size="lg" />
+				</span>
 			</div>
 		</div>
 	);

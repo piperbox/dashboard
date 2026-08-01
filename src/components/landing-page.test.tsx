@@ -37,14 +37,17 @@ test("renders the three why-piper card titles", async () => {
 	expect(screen.getByText("Developer-first")).toBeTruthy();
 });
 
-test("renders the three how-it-works steps with numbers", async () => {
+test("renders the three how-it-works steps with real piper commands", async () => {
 	await renderLanding();
-	expect(screen.getByText("piper connect")).toBeTruthy();
-	expect(
-		screen.getByText("piper app link myapp --repo owner/name"),
-	).toBeTruthy();
+	expect(screen.getByText("piper login")).toBeTruthy();
+	expect(screen.getByText("piper deploy blog --path .")).toBeTruthy();
 	expect(screen.getByText("step 01")).toBeTruthy();
 	expect(screen.getByText("step 03")).toBeTruthy();
+});
+
+test("no step advertises the non-existent piper connect command", async () => {
+	await renderLanding();
+	expect(screen.queryByText("piper connect")).toBeNull();
 });
 
 test("renders the relay diagram labels", async () => {
