@@ -138,6 +138,11 @@ export type Deployment = {
 	id: string;
 	pr: number;
 	status: string;
+	// Public host a PR preview is served at, assigned by the relay and recorded
+	// on the deployment row. Always "" for production, whose host lives on the
+	// app row instead. A retired preview keeps the host it served, which no
+	// longer resolves — only link a running one.
+	hostname: string;
 	createdAt: string;
 };
 
@@ -145,6 +150,7 @@ type RawDeployment = {
 	ID: string;
 	PR: number;
 	Status: string;
+	Hostname: string;
 	CreatedAt: string;
 };
 
@@ -175,6 +181,7 @@ export async function fetchDeployments(
 		id: d.ID,
 		pr: d.PR,
 		status: d.Status,
+		hostname: d.Hostname,
 		createdAt: d.CreatedAt,
 	}));
 }

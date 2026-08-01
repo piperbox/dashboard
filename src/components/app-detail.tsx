@@ -256,6 +256,20 @@ function DeploymentRow({
 					) : (
 						<span className="text-muted-foreground text-sm">Production</span>
 					)}
+					{/* Only a running preview is reachable: teardown deregisters the
+					    host at the relay but leaves it on the row so the history
+					    survives, so a retired preview's URL is dead. */}
+					{deployment.pr > 0 &&
+					deployment.status === "running" &&
+					deployment.hostname ? (
+						<a
+							href={`https://${deployment.hostname}`}
+							onClick={(e) => e.stopPropagation()}
+							className="text-primary text-sm"
+						>
+							{deployment.hostname}
+						</a>
+					) : null}
 				</span>
 				<span className="flex items-center gap-3">
 					<StatusPill status={deployment.status} />
