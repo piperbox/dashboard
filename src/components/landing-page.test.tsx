@@ -50,12 +50,6 @@ test("no step advertises the non-existent piper connect command", async () => {
 	expect(screen.queryByText("piper connect")).toBeNull();
 });
 
-test("renders the relay diagram labels", async () => {
-	await renderLanding();
-	expect(screen.getByText("piper-relay · cloud")).toBeTruthy();
-	expect(screen.getByText("your box · piperd")).toBeTruthy();
-});
-
 test("every sign-in link points to /login", async () => {
 	await renderLanding();
 	const links = screen.getAllByRole("link", { name: /sign in/i });

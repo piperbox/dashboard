@@ -1,5 +1,6 @@
 import { Link } from "@tanstack/react-router";
 import { useCallback, useEffect, useRef, useState } from "react";
+import { LandingRelay } from "@/components/landing-relay";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { INSTALL_CMD, REPO_URL } from "@/lib/links";
 
@@ -192,57 +193,6 @@ function WhySection() {
 	);
 }
 
-function RelaySection() {
-	return (
-		<div className="py-16">
-			<div className="mb-9 text-center">
-				<div className="mb-2 text-[11px] uppercase tracking-[0.16em] text-primary">
-					the relay
-				</div>
-				<h2 className="text-[26px] font-semibold">
-					Public traffic, private network
-				</h2>
-				<p className="mx-auto mt-[14px] max-w-[600px] text-sm leading-[1.6] text-muted-foreground text-pretty">
-					TLS terminates on your box; the relay splices ciphertext by SNI over
-					an outbound tunnel — so it works behind CGNAT and never sees
-					plaintext.
-				</p>
-			</div>
-			<div className="flex flex-wrap items-stretch justify-center text-left">
-				<div className="min-w-[220px] flex-1 rounded-[2px] border border-border bg-card p-[18px]">
-					<div className="mb-2 text-[11px] uppercase tracking-[0.08em] text-status-idle">
-						visitors & cli
-					</div>
-					<div className="text-[13px] text-foreground">https://app.you.dev</div>
-				</div>
-				<div className="flex min-w-[78px] flex-col items-center justify-center p-3 text-[12px] text-foreground">
-					HTTPS →
-				</div>
-				<div className="min-w-[220px] flex-[1.15] rounded-[2px] border border-primary bg-primary/[0.07] p-[18px]">
-					<div className="mb-2 text-[11px] uppercase tracking-[0.08em] text-primary">
-						piper-relay · cloud
-					</div>
-					<div className="text-[13px] text-foreground">
-						SNI passthrough — ciphertext only
-					</div>
-				</div>
-				<div className="flex min-w-[78px] flex-col items-center justify-center p-3 text-center text-[11px] text-foreground">
-					← tunnel
-					<span className="mt-[3px] text-status-idle">(CGNAT)</span>
-				</div>
-				<div className="min-w-[220px] flex-[1.15] rounded-[2px] border border-border bg-card p-[18px]">
-					<div className="mb-2 text-[11px] uppercase tracking-[0.08em] text-status-ok">
-						your box · piperd
-					</div>
-					<div className="text-[13px] text-foreground">
-						Docker · Caddy · TLS ends here
-					</div>
-				</div>
-			</div>
-		</div>
-	);
-}
-
 function HowSection() {
 	return (
 		<div id="how" className="py-16">
@@ -334,7 +284,7 @@ export function LandingPage() {
 				<div className="border-t border-border" />
 				<WhySection />
 				<div className="border-t border-border" />
-				<RelaySection />
+				<LandingRelay />
 				<div className="border-t border-border" />
 				<HowSection />
 			</div>
