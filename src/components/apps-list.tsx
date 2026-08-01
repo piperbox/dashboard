@@ -1,7 +1,10 @@
 import { Link } from "@tanstack/react-router";
+import { useState } from "react";
+import { inputClass } from "@/components/ui/field";
 import { HintBar } from "@/components/ui/hint-bar";
 import { PageHeader } from "@/components/ui/page-header";
 import { relativeTime } from "@/lib/relative-time";
+import { cn } from "@/lib/utils";
 import type { App, AppDomainStatus, BoxAppDomains } from "@/server/relay";
 import { StatusBadge } from "./status-badge";
 
@@ -12,15 +15,21 @@ export type FlatApp = {
 	domain: AppDomainStatus | null;
 };
 
+function inScope(
+	box: BoxAppDomains["box"],
+	scope: string,
+	username: string | null,
+) {
+	return scope === "personal" ? box.owner === username : box.owner === scope;
+}
+
 export function flattenApps(
 	items: BoxAppDomains[],
 	scope: string,
 	username: string | null,
 ): FlatApp[] {
 	return items
-		.filter(({ box }) =>
-			scope === "personal" ? box.owner === username : box.owner === scope,
-		)
+		.filter(({ box }) => inScope(box, scope, username))
 		.flatMap(({ box, domains }) =>
 			box.apps.map((app) => ({
 				base: box.base,
@@ -107,29 +116,57 @@ export function AppsList({
 	scope: string;
 	username: string | null;
 }) {
+	const [filter, setFilter] = useState("");
 	const apps = flattenApps(items, scope, username);
+	const boxes = items.filter(({ box }) => inScope(box, scope, username)).length;
+	const q = filter.trim().toLowerCase();
+	const shown =
+		q === ""
+			? apps
+			: apps.filter((f) =>
+					`${f.app.name} ${f.base} ${f.app.repo}`.toLowerCase().includes(q),
+				);
 	return (
 		<main className="flex flex-col gap-5 py-8">
-			<div className="flex flex-wrap items-end justify-between gap-4">
-				<PageHeader
-					kicker="your software"
-					title="apps"
-					subtitle={`${apps.length} apps`}
-				/>
-				<Link
-					to="/apps/new"
-					className="rounded-[2px] bg-primary px-4 py-2 font-medium text-primary-foreground text-sm no-underline hover:bg-primary/90"
-				>
-					+ New app
-				</Link>
+			<PageHeader kicker="your software" title="apps" />
+			<div className="flex items-center gap-3 rounded-[2px] border border-border bg-card px-3 py-2">
+				<span className="text-muted-foreground text-xs">
+					{scope} · {apps.length} apps · {boxes} boxes
+				</span>
+				<span className="ml-auto flex items-center gap-2.5">
+					<input
+						aria-label="filter apps"
+						value={filter}
+						onChange={(e) => setFilter(e.target.value)}
+						placeholder="filter"
+						className={cn(inputClass, "w-[150px] px-2 py-1 text-xs")}
+					/>
+					<Link
+						to="/apps/new"
+						className="rounded-[2px] bg-primary px-3 py-1.5 font-medium text-primary-foreground text-[13px] no-underline hover:bg-primary/90"
+					>
+						+ new app
+					</Link>
+				</span>
 			</div>
-			{apps.length === 0 ? (
-				<HintBar>
-					deploy one with <code>piper deploy</code> from a box.
-				</HintBar>
+			{shown.length === 0 ? (
+				<div className="flex flex-col gap-2 rounded-[2px] border border-border bg-card px-4 py-5">
+					{apps.length === 0 ? (
+						<>
+							<p className="text-[13px]">No apps in this scope.</p>
+							<HintBar>
+								link a repo above, or run <code>piper deploy</code> from a box.
+							</HintBar>
+						</>
+					) : (
+						<p className="text-[13px]">
+							No apps match <code>{filter.trim()}</code>.
+						</p>
+					)}
+				</div>
 			) : (
 				<div className="grid grid-cols-[repeat(auto-fill,minmax(320px,1fr))] gap-3.5">
-					{apps.map((f) => (
+					{shown.map((f) => (
 						<AppCard key={`${f.base}/${f.app.name}`} {...f} />
 					))}
 				</div>
