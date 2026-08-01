@@ -202,9 +202,7 @@ export function useLandingAnimations(rootRef: RefObject<HTMLElement | null>) {
 					const accent = open ? "var(--status-ok)" : "var(--primary)";
 					s.style.borderColor = on ? accent : "var(--border)";
 					s.style.background = on
-						? open
-							? "rgba(74,222,128,0.06)"
-							: "rgba(255,180,84,0.06)"
+						? `color-mix(in srgb, ${accent} 6%, transparent)`
 						: "var(--card)";
 					const lock = s.querySelector<HTMLElement>("[data-lp-lock]");
 					if (lock) {
