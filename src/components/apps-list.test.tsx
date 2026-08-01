@@ -4,7 +4,7 @@ import {
 	createRouter,
 	RouterProvider,
 } from "@tanstack/react-router";
-import { render, screen } from "@testing-library/react";
+import { fireEvent, render, screen } from "@testing-library/react";
 import type { AppDomainStatus, BoxAppDomains } from "@/server/relay";
 import { AppsList, flattenApps } from "./apps-list";
 
@@ -54,6 +54,27 @@ const items: BoxAppDomains[] = [
 	},
 ];
 
+const twoBoxItems: BoxAppDomains[] = [
+	{
+		box: {
+			base: "rpi-alpha",
+			owner: "octocat",
+			connected: true,
+			apps: [app("web", "running")],
+		},
+		domains: {},
+	},
+	{
+		box: {
+			base: "rpi-beta",
+			owner: "octocat",
+			connected: true,
+			apps: [app("api", "running")],
+		},
+		domains: {},
+	},
+];
+
 test("flattenApps flattens and scopes by owner", () => {
 	expect(
 		flattenApps(items, "personal", "octocat").map((f) => f.app.name),
@@ -63,10 +84,14 @@ test("flattenApps flattens and scopes by owner", () => {
 	]);
 });
 
-async function renderList(scope: string, username: string) {
+async function renderList(
+	scope: string,
+	username: string,
+	list: BoxAppDomains[] = items,
+) {
 	const root = createRootRoute({
 		component: () => (
-			<AppsList items={items} scope={scope} username={username} />
+			<AppsList items={list} scope={scope} username={username} />
 		),
 	});
 	const router = createRouter({ routeTree: root });
@@ -101,5 +126,50 @@ test("offers a new-app link into the wizard", async () => {
 
 test("shows the empty hint when no apps are in scope", async () => {
 	await renderList("personal", "nobody");
+	expect(screen.getByText(/No apps in this scope\./)).toBeTruthy();
 	expect(screen.getByText(/piper deploy/i)).toBeTruthy();
+});
+
+test("keeps the command bar above a populated grid", async () => {
+	await renderList("personal", "octocat");
+	expect(screen.getByText("personal · 1 apps · 1 boxes")).toBeTruthy();
+	expect(screen.getByPlaceholderText("filter")).toBeTruthy();
+	expect(screen.getByText(/new app/i).getAttribute("href")).toBe("/apps/new");
+});
+
+test("keeps the command bar in the empty state", async () => {
+	await renderList("personal", "nobody");
+	expect(screen.getByText("personal · 0 apps · 0 boxes")).toBeTruthy();
+	expect(screen.getByPlaceholderText("filter")).toBeTruthy();
+	expect(screen.getByText(/new app/i).getAttribute("href")).toBe("/apps/new");
+});
+
+test("filters the grid by app name, box base and repo", async () => {
+	await renderList("personal", "octocat", twoBoxItems);
+	const filter = screen.getByPlaceholderText("filter");
+	expect(screen.getByText("web")).toBeTruthy();
+	expect(screen.getByText("api")).toBeTruthy();
+
+	fireEvent.change(filter, { target: { value: "AP" } });
+	expect(screen.getByText("api")).toBeTruthy();
+	expect(screen.queryByText("web")).toBeNull();
+
+	fireEvent.change(filter, { target: { value: "alpha" } });
+	expect(screen.getByText("web")).toBeTruthy();
+	expect(screen.queryByText("api")).toBeNull();
+
+	fireEvent.change(filter, { target: { value: "getpiper/x" } });
+	expect(screen.getByText("web")).toBeTruthy();
+	expect(screen.getByText("api")).toBeTruthy();
+});
+
+test("distinguishes a filter with no matches from an empty scope", async () => {
+	await renderList("personal", "octocat", twoBoxItems);
+	fireEvent.change(screen.getByPlaceholderText("filter"), {
+		target: { value: "zzz" },
+	});
+	expect(screen.getByText("zzz")).toBeTruthy();
+	expect(screen.getByText(/No apps match/)).toBeTruthy();
+	expect(screen.queryByText(/No apps in this scope\./)).toBeNull();
+	expect(screen.queryByText(/piper deploy/i)).toBeNull();
 });
