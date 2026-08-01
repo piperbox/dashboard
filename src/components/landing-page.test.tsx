@@ -7,8 +7,28 @@ import {
 import { fireEvent, render, screen } from "@testing-library/react";
 import { LandingPage } from "./landing-page";
 
+function mockReducedMotion(reduce: boolean) {
+	Object.defineProperty(window, "matchMedia", {
+		configurable: true,
+		writable: true,
+		value: (query: string) => ({
+			matches: reduce && query.includes("prefers-reduced-motion"),
+			media: query,
+			onchange: null,
+			addEventListener: () => {},
+			removeEventListener: () => {},
+			addListener: () => {},
+			removeListener: () => {},
+			dispatchEvent: () => false,
+		}),
+	});
+}
+
 // LandingPage renders <Link>, which needs a router context to mount.
-async function renderLanding() {
+// Content assertions run with motion off so the DOM is static: the motion
+// layer hides reveal targets and rewrites typewriter text once it engages.
+async function renderLanding({ reducedMotion = true } = {}) {
+	mockReducedMotion(reducedMotion);
 	const rootRoute = createRootRoute({ component: LandingPage });
 	const router = createRouter({ routeTree: rootRoute });
 	await router.navigate({ to: "/" });
@@ -107,4 +127,27 @@ test("hero exposes animation hooks for the motion layer", async () => {
 	);
 	expect(container.querySelector("[data-lp-aura]")).toBeTruthy();
 	expect(container.querySelector("[data-lp-pulse]")).toBeTruthy();
+});
+
+test("reduced motion leaves every reveal target fully visible", async () => {
+	const { container } = await renderLanding({ reducedMotion: true });
+	const targets = container.querySelectorAll<HTMLElement>(
+		"[data-lp-hero], [data-lp-reveal]",
+	);
+	expect(targets.length).toBeGreaterThan(0);
+	for (const el of targets) {
+		expect(el.style.opacity).toBe("");
+	}
+});
+
+test("without reduced motion the hook hides reveal targets to animate them", async () => {
+	const { container } = await renderLanding({ reducedMotion: false });
+	const targets = container.querySelectorAll<HTMLElement>("[data-lp-reveal]");
+	expect(targets.length).toBeGreaterThan(0);
+	expect(targets[0]?.style.opacity).toBe("0");
+});
+
+test("motion layer mounts and unmounts without throwing", async () => {
+	const { unmount } = await renderLanding({ reducedMotion: false });
+	expect(() => unmount()).not.toThrow();
 });

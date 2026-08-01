@@ -2,6 +2,7 @@ import { Link } from "@tanstack/react-router";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { LandingRelay } from "@/components/landing-relay";
 import { Button, buttonVariants } from "@/components/ui/button";
+import { useLandingAnimations } from "@/components/use-landing-animations";
 import { INSTALL_CMD, REPO_URL } from "@/lib/links";
 
 const whyCards = [
@@ -300,8 +301,10 @@ function Footer() {
 }
 
 export function LandingPage() {
+	const rootRef = useRef<HTMLDivElement>(null);
+	useLandingAnimations(rootRef);
 	return (
-		<div className="min-h-screen bg-background">
+		<div ref={rootRef} className="min-h-screen bg-background">
 			<Header />
 			<div id="top" className="mx-auto max-w-[1080px] px-[18px] lg:px-6">
 				<Hero />
