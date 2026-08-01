@@ -1,6 +1,18 @@
-import { expect, test } from "bun:test";
+import { afterEach, expect, test } from "bun:test";
 import { render, screen } from "@testing-library/react";
+import { useRef } from "react";
 import { LandingRelay } from "./landing-relay";
+import { useLandingAnimations } from "./use-landing-animations";
+
+const originalMatchMedia = window.matchMedia;
+
+afterEach(() => {
+	Object.defineProperty(window, "matchMedia", {
+		configurable: true,
+		writable: true,
+		value: originalMatchMedia,
+	});
+});
 
 test("renders the three diagram node labels", () => {
 	render(<LandingRelay />);
@@ -43,4 +55,47 @@ test("diagram and mobile list are mutually exclusive across breakpoints", () => 
 	expect(diagram?.className).toContain("hidden");
 	expect(diagram?.className).toContain("md:flex");
 	expect(steps?.className).toContain("md:hidden");
+});
+
+function mockReducedMotion(reduce: boolean) {
+	Object.defineProperty(window, "matchMedia", {
+		configurable: true,
+		writable: true,
+		value: (query: string) => ({
+			matches: reduce && query.includes("prefers-reduced-motion"),
+			media: query,
+			onchange: null,
+			addEventListener: () => {},
+			removeEventListener: () => {},
+			addListener: () => {},
+			removeListener: () => {},
+			dispatchEvent: () => false,
+		}),
+	});
+}
+
+function Animated() {
+	const ref = useRef<HTMLDivElement>(null);
+	useLandingAnimations(ref);
+	return (
+		<div ref={ref}>
+			<LandingRelay />
+		</div>
+	);
+}
+
+test("connector chips are injected on mount and removed on unmount", () => {
+	mockReducedMotion(false);
+	const { container, unmount } = render(<Animated />);
+	const track = container.querySelector("[data-lp-track]");
+	expect(track?.childElementCount).toBe(2);
+	unmount();
+	// Chips must not survive teardown — StrictMode remounts would stack them.
+	expect(track?.childElementCount).toBe(0);
+});
+
+test("reduced motion injects no chips at all", () => {
+	mockReducedMotion(true);
+	const { container } = render(<Animated />);
+	expect(container.querySelector("[data-lp-track]")?.childElementCount).toBe(0);
 });

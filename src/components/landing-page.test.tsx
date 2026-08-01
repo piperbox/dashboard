@@ -1,4 +1,4 @@
-import { expect, mock, test } from "bun:test";
+import { afterEach, expect, mock, test } from "bun:test";
 import {
 	createRootRoute,
 	createRouter,
@@ -6,6 +6,16 @@ import {
 } from "@tanstack/react-router";
 import { fireEvent, render, screen } from "@testing-library/react";
 import { LandingPage } from "./landing-page";
+
+const originalMatchMedia = window.matchMedia;
+
+afterEach(() => {
+	Object.defineProperty(window, "matchMedia", {
+		configurable: true,
+		writable: true,
+		value: originalMatchMedia,
+	});
+});
 
 function mockReducedMotion(reduce: boolean) {
 	Object.defineProperty(window, "matchMedia", {
