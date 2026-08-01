@@ -26,7 +26,7 @@ test("renders the hero headline including the git push accent", async () => {
 test("shows the install command", async () => {
 	await renderLanding();
 	expect(
-		screen.getByText("curl -fsSL https://get.openpiper.dev/install.sh | sh"),
+		screen.getByText("curl -fsSL https://get.piperbox.dev/install.sh | sh"),
 	).toBeTruthy();
 });
 
@@ -83,7 +83,7 @@ test("copy button copies the install command and flips its label", async () => {
 	});
 	fireEvent.click(copyBtn);
 	expect(writeText).toHaveBeenCalledWith(
-		"curl -fsSL https://get.openpiper.dev/install.sh | sh",
+		"curl -fsSL https://get.piperbox.dev/install.sh | sh",
 	);
 	expect(await screen.findByText("✓ copied")).toBeTruthy();
 });
