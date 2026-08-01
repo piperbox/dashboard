@@ -13,7 +13,7 @@ async function renderLanding() {
 	const router = createRouter({ routeTree: rootRoute });
 	await router.navigate({ to: "/" });
 	// biome-ignore lint/suspicious/noExplicitAny: test router typing shortcut
-	render(<RouterProvider router={router as any} />);
+	return render(<RouterProvider router={router as any} />);
 }
 
 test("renders the hero headline including the git push accent", async () => {
@@ -90,4 +90,21 @@ test("footer renders piperbox github org", async () => {
 	expect(
 		screen.getByText("Apache-2.0 · runs on a Pi · piperbox/piper"),
 	).toBeTruthy();
+});
+
+test("hero headline scales across breakpoints", async () => {
+	await renderLanding();
+	const h1 = screen.getByRole("heading", { level: 1 });
+	expect(h1.className).toContain("text-[32px]");
+	expect(h1.className).toContain("md:text-[42px]");
+	expect(h1.className).toContain("lg:text-[52px]");
+});
+
+test("hero exposes animation hooks for the motion layer", async () => {
+	const { container } = await renderLanding();
+	expect(container.querySelectorAll("[data-lp-hero]").length).toBeGreaterThan(
+		0,
+	);
+	expect(container.querySelector("[data-lp-aura]")).toBeTruthy();
+	expect(container.querySelector("[data-lp-pulse]")).toBeTruthy();
 });

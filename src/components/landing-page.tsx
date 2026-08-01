@@ -70,6 +70,7 @@ function CopyInstallButton({
 			variant={variant}
 			size={size}
 			bracketed={false}
+			className={variant === "neutral" ? "w-full md:w-auto" : undefined}
 			onClick={() => copy(INSTALL_CMD)}
 		>
 			{copied ? "✓ copied" : "copy install command"}
@@ -86,7 +87,7 @@ function Header() {
 			>
 				pi@<span className="text-primary">piper</span>
 			</a>
-			<nav className="flex gap-[22px] px-[22px] text-[13px]">
+			<nav className="hidden gap-[22px] px-[22px] text-[13px] md:flex">
 				<a className="text-muted-foreground" href="#why">
 					why piper
 				</a>
@@ -124,37 +125,60 @@ function Header() {
 
 function Hero() {
 	return (
-		<div className="bg-[radial-gradient(120%_90%_at_50%_-10%,rgba(255,180,84,0.09),transparent_60%)] pt-[88px] pb-[60px] text-center">
-			<div className="mb-[26px] inline-flex items-center gap-2 rounded-full border border-border px-[14px] py-[5px] text-[11px] uppercase tracking-[0.14em] text-muted-foreground">
-				<span className="h-1.5 w-1.5 rounded-full bg-status-ok" /> the paas that
-				runs on hardware you own
-			</div>
-			<h1 className="mx-auto max-w-[860px] text-[52px] font-bold leading-[1.1] tracking-[-0.015em] text-balance">
-				Deploy to your own box
-				<br />
-				with one <span className="text-primary">git push</span>.
-			</h1>
-			<p className="mx-auto mt-6 max-w-[600px] text-base leading-[1.6] text-muted-foreground text-pretty">
-				Open-source, developer-first, zero-trust. Piper turns any box you own
-				into a real deploy target with a public HTTPS URL — a cloud VM, an old
-				laptop, a home server, even a Raspberry Pi behind CGNAT — without
-				exposing your network to anyone, including the relay.
-			</p>
-			<div className="mt-[34px] flex justify-center">
-				<div className="inline-flex flex-wrap items-center justify-center gap-3 rounded-[2px] border border-border bg-card px-[14px] py-[11px] text-[13.5px]">
-					<span className="text-primary">$</span>
-					<span>{INSTALL_CMD}</span>
-					<CopyInstallButton variant="neutral" size="sm" />
+		<div className="relative pt-[88px] pb-[60px] text-center">
+			<div
+				data-lp-aura
+				className="pointer-events-none absolute inset-x-0 -top-10 h-[420px] animate-[lpAura_11s_ease-in-out_infinite] bg-[radial-gradient(120%_90%_at_50%_-10%,rgba(255,180,84,0.09),transparent_60%)]"
+			/>
+			<div className="relative">
+				<div
+					data-lp-hero
+					className="mb-[26px] inline-flex items-center gap-2 rounded-full border border-border px-[14px] py-[5px] text-[11px] uppercase tracking-[0.14em] text-muted-foreground"
+				>
+					<span
+						data-lp-pulse
+						className="h-1.5 w-1.5 rounded-full bg-status-ok"
+					/>{" "}
+					the paas that runs on hardware you own
 				</div>
-			</div>
-			<div className="mt-4 flex justify-center gap-5 text-[13px] text-muted-foreground">
-				<a href={REPO_URL} target="_blank" rel="noreferrer">
-					read the docs →
-				</a>
-				<span className="text-border">|</span>
-				<a href={REPO_URL} target="_blank" rel="noreferrer">
-					★ star on github
-				</a>
+				<h1
+					data-lp-hero
+					className="mx-auto max-w-[860px] text-[32px] font-bold leading-[1.1] tracking-[-0.015em] text-balance md:text-[42px] lg:text-[52px]"
+				>
+					Deploy to your own box
+					<br />
+					with one <span className="text-primary">git push</span>.
+				</h1>
+				<p
+					data-lp-hero
+					className="mx-auto mt-6 max-w-[600px] text-base leading-[1.6] text-muted-foreground text-pretty"
+				>
+					Open-source, developer-first, zero-trust. Piper turns any box you own
+					into a real deploy target with a public HTTPS URL — a cloud VM, an old
+					laptop, a home server, even a Raspberry Pi behind CGNAT — without
+					exposing your network to anyone, including the relay.
+				</p>
+				<div data-lp-hero className="mt-[34px] flex justify-center">
+					<div className="flex w-full flex-col items-stretch gap-2.5 rounded-[2px] border border-border bg-card px-[14px] py-[11px] text-xs md:inline-flex md:w-auto md:flex-row md:items-center md:gap-3 md:text-[13.5px]">
+						<span className="flex min-w-0 max-w-full items-center gap-2.5 overflow-x-auto whitespace-nowrap md:whitespace-normal">
+							<span className="text-primary">$</span>
+							<span>{INSTALL_CMD}</span>
+						</span>
+						<CopyInstallButton variant="neutral" size="sm" />
+					</div>
+				</div>
+				<div
+					data-lp-hero
+					className="mt-4 flex justify-center gap-5 text-[13px] text-muted-foreground"
+				>
+					<a href={REPO_URL} target="_blank" rel="noreferrer">
+						read the docs →
+					</a>
+					<span className="text-border">|</span>
+					<a href={REPO_URL} target="_blank" rel="noreferrer">
+						★ star on github
+					</a>
+				</div>
 			</div>
 		</div>
 	);
@@ -279,7 +303,7 @@ export function LandingPage() {
 	return (
 		<div className="min-h-screen bg-background">
 			<Header />
-			<div id="top" className="mx-auto max-w-[1080px] px-6">
+			<div id="top" className="mx-auto max-w-[1080px] px-[18px] lg:px-6">
 				<Hero />
 				<div className="border-t border-border" />
 				<WhySection />
