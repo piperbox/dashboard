@@ -33,11 +33,30 @@ export const Route = createRootRoute({
 			{
 				title: "Piper Dashboard",
 			},
+			{
+				name: "description",
+				content:
+					"Manage apps, boxes, domains and deployments running on hardware you own — the Piper dashboard over the same API the piper CLI uses.",
+			},
 		],
 		links: [
 			{
 				rel: "stylesheet",
 				href: appCss,
+			},
+			{
+				rel: "icon",
+				type: "image/svg+xml",
+				href: "/favicon.svg",
+			},
+			{
+				rel: "icon",
+				type: "image/x-icon",
+				href: "/favicon.ico",
+			},
+			{
+				rel: "manifest",
+				href: "/manifest.json",
 			},
 		],
 	}),
