@@ -1,0 +1,35 @@
+{
+  "version": 1,
+  "generated_at": "2026-09-10T15:01:58.550Z",
+  "articles": [
+    {
+      "source_article_id": "6aa2561c099ca8701a7e1195",
+      "slug": "master-application-deployment-guide",
+      "title": "Master Application Deployment: From Git Push to Production on Any Hardware",
+      "meta_title": "Application Deployment Guide: Git Push to Production",
+      "meta_description": "Learn application deployment fundamentals, strategies, and workflows. Deploy to cloud, home servers, or Raspberry Pi with zero-trust security and git push",
+      "keyword": "deploy an application",
+      "cover": "https://d1j2qr4p4hoxbs.cloudfront.net/articles/6aa2561c099ca8701a7e1195/cover-3428d3da13885eb2.webp",
+      "cover_alt": "Flat vector illustration showing a network of interconnected devices including a single-board computer, cloud server, and network cables representing global application deployment infrastructure",
+      "cover_width": 1216,
+      "cover_height": 640,
+      "images": [
+        {
+          "src": "https://d1j2qr4p4hoxbs.cloudfront.net/articles/6aa2561c099ca8701a7e1195/inline-1-74857b4a46819972.webp",
+          "alt": "Flat vector illustration of a compact home server with ethernet and power cables arranged on a minimal surface, representing lightweight self-hosted deployment infrastructure",
+          "width": 1216,
+          "height": 704
+        },
+        {
+          "src": "https://d1j2qr4p4hoxbs.cloudfront.net/articles/6aa2561c099ca8701a7e1195/inline-2-498075adc7e7e36c.webp",
+          "alt": "Flat vector illustration with layered geometric shapes and flowing lines representing encrypted data pathways and security layers in a zero-trust relay architecture",
+          "width": 1216,
+          "height": 704
+        }
+      ],
+      "published_at": "2026-09-10T15:01:58.550Z",
+      "updated_at": null,
+      "path": "src/content/blog/articles/master-application-deployment-guide.md"
+    }
+  ]
+}
