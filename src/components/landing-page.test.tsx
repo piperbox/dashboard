@@ -40,7 +40,10 @@ function mockReducedMotion(reduce: boolean) {
 async function renderLanding({ reducedMotion = true } = {}) {
 	mockReducedMotion(reducedMotion);
 	const rootRoute = createRootRoute({ component: LandingPage });
-	const router = createRouter({ routeTree: rootRoute });
+	const router = createRouter({
+		routeTree: rootRoute,
+		trailingSlash: "preserve",
+	});
 	await router.navigate({ to: "/" });
 	// biome-ignore lint/suspicious/noExplicitAny: test router typing shortcut
 	return render(<RouterProvider router={router as any} />);
@@ -160,4 +163,13 @@ test("without reduced motion the hook hides reveal targets to animate them", asy
 test("motion layer mounts and unmounts without throwing", async () => {
 	const { unmount } = await renderLanding({ reducedMotion: false });
 	expect(() => unmount()).not.toThrow();
+});
+
+test("links to the blog from the nav and the footer", async () => {
+	await renderLanding();
+	const links = screen.getAllByRole("link", { name: "blog" });
+	expect(links).toHaveLength(2);
+	for (const link of links) {
+		expect(link.getAttribute("href")).toBe("/blog/");
+	}
 });
