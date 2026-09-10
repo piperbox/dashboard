@@ -1,6 +1,9 @@
 import { expect, test } from "bun:test";
+import { docHead, docsIndexHead } from "./lib/docs";
 import { Route as RootRoute } from "./routes/__root";
 import { Route as IndexRoute } from "./routes/index";
+import { Route as LoginRoute } from "./routes/login";
+import { Route as UiRoute } from "./routes/ui";
 
 type Meta = { name?: string; title?: string; content?: string };
 type Link = { rel?: string; href?: string; type?: string };
@@ -56,4 +59,48 @@ test("the root head links the icon set and the web app manifest", () => {
 		href: "/favicon.ico",
 	});
 	expect(links.some((l) => l.rel === "manifest")).toBe(true);
+});
+
+const isNoindex = (route: { options: { head?: unknown } }): boolean =>
+	metaOf(route).some((m) => m.name === "robots" && m.content === "noindex");
+
+const canonicalOf = (
+	route: { options: { head?: unknown } },
+	ctx: unknown = {},
+): string | undefined => {
+	const head = route.options.head as
+		| ((ctx: unknown) => { links?: Link[] })
+		| undefined;
+	return head?.(ctx)?.links?.find((l) => l.rel === "canonical")?.href;
+};
+
+test("the login page and the component preview are noindex", () => {
+	expect(isNoindex(LoginRoute)).toBe(true);
+	expect(isNoindex(UiRoute)).toBe(true);
+});
+
+test("the landing page canonicalizes to the production origin", () => {
+	expect(canonicalOf(IndexRoute)).toBe("https://piperbox.dev/");
+	expect(isNoindex(IndexRoute)).toBe(false);
+});
+
+test("docs pages canonicalize to the production origin", () => {
+	expect(docsIndexHead([]).links).toContainEqual({
+		rel: "canonical",
+		href: "https://piperbox.dev/docs",
+	});
+	expect(docHead("install").links).toContainEqual({
+		rel: "canonical",
+		href: "https://piperbox.dev/docs/install",
+	});
+});
+
+test("the docs index is noindex only while it has nothing to show", () => {
+	const noindex = (meta: Meta[]) =>
+		meta.some((m) => m.name === "robots" && m.content === "noindex");
+	expect(noindex(docsIndexHead([]).meta)).toBe(true);
+	expect(
+		noindex(docsIndexHead([{ slug: "install", title: "Install" }]).meta),
+	).toBe(false);
+	expect(noindex(docHead("install").meta)).toBe(false);
 });

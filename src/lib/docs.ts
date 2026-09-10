@@ -4,7 +4,8 @@ import remarkGfm from "remark-gfm";
 import remarkParse from "remark-parse";
 import { unified } from "unified";
 import { visit } from "unist-util-visit";
-import { REPO_URL } from "@/lib/links";
+import type { DocEntry } from "@/content/docs/manifest";
+import { REPO_URL, SITE_ORIGIN } from "@/lib/links";
 
 export type DocLink = { href: string; external: boolean };
 
@@ -69,4 +70,22 @@ export function leadParagraph(md: string): string {
 
 export function slugFromPath(path: string): string {
 	return path.split("/").pop()?.replace(/\.md$/, "") ?? "";
+}
+
+const NOINDEX = { name: "robots", content: "noindex" };
+
+// Canonical to the fixed production origin so previews and staging hosts
+// don't index as duplicates; the index is noindex while it has nothing to show.
+export function docsIndexHead(docs: DocEntry[]) {
+	return {
+		meta: docs.length === 0 ? [NOINDEX] : [],
+		links: [{ rel: "canonical", href: `${SITE_ORIGIN}/docs` }],
+	};
+}
+
+export function docHead(slug: string) {
+	return {
+		meta: [],
+		links: [{ rel: "canonical", href: `${SITE_ORIGIN}/docs/${slug}` }],
+	};
 }
