@@ -2,6 +2,7 @@ import { createFileRoute, notFound } from "@tanstack/react-router";
 import { DocsLayout } from "@/components/docs-layout";
 import { DocsPage } from "@/components/docs-page";
 import { DOCS } from "@/content/docs/manifest";
+import { docHead } from "@/lib/docs";
 import { loadDoc } from "@/lib/docs-content";
 
 export const Route = createFileRoute("/docs/$slug")({
@@ -11,6 +12,7 @@ export const Route = createFileRoute("/docs/$slug")({
 		if (!markdown) throw notFound();
 		return { markdown };
 	},
+	head: ({ params }) => docHead(params.slug),
 	component: DocPage,
 });
 

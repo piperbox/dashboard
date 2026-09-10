@@ -2,11 +2,12 @@ import { createFileRoute } from "@tanstack/react-router";
 import { DocsIndex } from "@/components/docs-index";
 import { DocsLayout } from "@/components/docs-layout";
 import { DOCS } from "@/content/docs/manifest";
-import { leadParagraph } from "@/lib/docs";
+import { docsIndexHead, leadParagraph } from "@/lib/docs";
 import { loadDoc } from "@/lib/docs-content";
 
 export const Route = createFileRoute("/docs/")({
 	staticData: { chrome: false },
+	head: () => docsIndexHead(DOCS),
 	loader: async () => {
 		const entries = await Promise.all(
 			DOCS.map(async (doc) => {

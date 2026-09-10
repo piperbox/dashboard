@@ -1,5 +1,6 @@
 import { createFileRoute, redirect } from "@tanstack/react-router";
 import { LandingPage } from "@/components/landing-page";
+import { SITE_ORIGIN } from "@/lib/links";
 import { getSession } from "../server/fns";
 
 // Public marketing landing at /. Authenticated visitors go straight to /apps.
@@ -16,6 +17,7 @@ export const Route = createFileRoute("/")({
 					"Piper is an open-source, zero-trust PaaS: turn a cloud VM, an old laptop or a Pi behind CGNAT into a deploy target with a public HTTPS URL.",
 			},
 		],
+		links: [{ rel: "canonical", href: `${SITE_ORIGIN}/` }],
 	}),
 	beforeLoad: async () => {
 		const session = await getSession();
