@@ -1,3 +1,4 @@
+import { Link } from "@tanstack/react-router";
 import { PageHeader } from "@/components/ui/page-header";
 import { Panel } from "@/components/ui/panel";
 import { type Article, formatDate } from "@/lib/blog";
@@ -15,7 +16,9 @@ export function BlogIndex({ articles }: { articles: Article[] }) {
 				<ul className="flex flex-col gap-5">
 					{articles.map((article) => (
 						<li key={article.slug}>
-							<a href={`/blog/${article.slug}/`}>{article.title}</a>
+							<Link to="/blog/$slug/" params={{ slug: article.slug }}>
+								{article.title}
+							</Link>
 							<p className="mt-1 text-muted-foreground text-sm">
 								{article.meta_description}
 							</p>

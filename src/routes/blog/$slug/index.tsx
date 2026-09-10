@@ -9,7 +9,10 @@ export const Route = createFileRoute("/blog/$slug/")({
 	// Only the trailing-slash form is canonical; send the other one there.
 	beforeLoad: ({ location }) => {
 		if (!location.pathname.endsWith("/")) {
-			throw redirect({ href: `${location.pathname}/`, statusCode: 301 });
+			throw redirect({
+				href: `${location.pathname}/${location.searchStr}${location.hash ? `#${location.hash}` : ""}`,
+				statusCode: 301,
+			});
 		}
 	},
 	loader: async ({ params }) => {

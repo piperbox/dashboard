@@ -65,7 +65,7 @@ export function BlogArticle({
 					},
 					iframe: ({ node, ...rest }) => (
 						<div className="my-4 aspect-video w-full">
-							<iframe className="h-full w-full" {...rest} />
+							<iframe {...rest} className="h-full w-full" />
 						</div>
 					),
 				}}

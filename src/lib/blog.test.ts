@@ -29,6 +29,12 @@ test("parseManifest refuses a contract version it was not written against", () =
 	).toThrow(/version 2/);
 });
 
+test("parseManifest refuses a manifest missing its articles array", () => {
+	expect(() => parseManifest({ version: 1, generated_at: "" })).toThrow(
+		"Malformed SEO Potion manifest",
+	);
+});
+
 test("stripFrontmatter drops everything through the closing fence", () => {
 	const md = '---\nslug: "x"\ntitle: "T"\n---\n## First heading\n\nBody.\n';
 	expect(stripFrontmatter(md)).toBe("## First heading\n\nBody.\n");

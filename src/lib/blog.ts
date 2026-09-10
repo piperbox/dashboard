@@ -33,7 +33,13 @@ type Manifest = { version: number; generated_at: string; articles: Article[] };
 // Articles come back in manifest order, which the contract guarantees is
 // newest first.
 export function parseManifest(raw: unknown): Article[] {
+	if (typeof raw !== "object" || raw === null) {
+		throw new Error("Malformed SEO Potion manifest");
+	}
 	const manifest = raw as Manifest;
+	if (!Array.isArray(manifest.articles)) {
+		throw new Error("Malformed SEO Potion manifest");
+	}
 	if (manifest.version !== 1) {
 		throw new Error(
 			`Unsupported SEO Potion manifest version ${manifest.version}`,
@@ -79,7 +85,7 @@ const ORGANIZATION = {
 	url: SITE_ORIGIN,
 };
 
-// "<" → "<" so a "</script>" inside a title can't terminate the tag.
+// "<" → "\u003c" so a "</script>" inside a title can't terminate the tag.
 function jsonLd(data: unknown) {
 	return {
 		type: "application/ld+json",

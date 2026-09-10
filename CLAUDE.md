@@ -88,6 +88,10 @@ Bun-only (never npm/yarn/node). TanStack Start + Tailwind/shadcn + Biome.
 - The dashboard consumes the **same authenticated API the CLI uses** — never
   add a privileged back door or anything requiring a closed/forked relay.
 - Tests never live in `src/routes/` (the file router scans it).
+- `src/content/blog/` is written by SEO Potion's GitHub App (branch `main`,
+  content folder `src/content/blog`, post URL base `https://piperbox.dev/blog`);
+  never hand-edit it or commit fixtures into it, and `biome.json` excludes it
+  because SEO Potion's JSON is not tab-formatted.
 
 ## Workflow
 
