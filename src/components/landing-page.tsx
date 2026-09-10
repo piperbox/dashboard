@@ -103,6 +103,9 @@ function Header() {
 				>
 					docs
 				</a>
+				<Link className="text-muted-foreground" to="/blog/">
+					blog
+				</Link>
 			</nav>
 			<div className="ml-auto flex items-center gap-3 px-4">
 				<a
@@ -291,6 +294,9 @@ function Footer() {
 					>
 						docs
 					</a>
+					<Link className="text-muted-foreground" to="/blog/">
+						blog
+					</Link>
 					<Link className="text-muted-foreground" to="/login">
 						sign in
 					</Link>
