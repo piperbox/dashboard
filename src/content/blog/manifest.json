@@ -1,7 +1,36 @@
 {
   "version": 1,
-  "generated_at": "2026-09-10T15:01:58.550Z",
+  "generated_at": "2026-09-10T21:22:02.852Z",
   "articles": [
+    {
+      "source_article_id": "6a99279640a33e54fec1be73",
+      "slug": "woodpecker-ci-self-hosted-deployment",
+      "title": "Self-Hosted CI/CD Workflows with Woodpecker and Piper",
+      "meta_title": "Woodpecker CI Self-Hosted Runners & Deployment",
+      "meta_description": "Deploy CI/CD pipelines to your own hardware with Woodpecker and Piper. Zero-trust relay, CGNAT support, and lightweight runners for home servers and edge",
+      "keyword": "woodpecker ci",
+      "cover": "https://d1j2qr4p4hoxbs.cloudfront.net/articles/6a99279640a33e54fec1be73/cover-b6a7dadb69dfa6ff.webp",
+      "cover_alt": "Flat vector illustration showing a single-board computer and home server connected by network cables in a local deployment setup",
+      "cover_width": 1216,
+      "cover_height": 640,
+      "images": [
+        {
+          "src": "https://d1j2qr4p4hoxbs.cloudfront.net/articles/6a99279640a33e54fec1be73/inline-1-cc7b2e36d901b63a.webp",
+          "alt": "Flat vector illustration of a single-board computer with connected components representing CI/CD runner infrastructure",
+          "width": 1216,
+          "height": 704
+        },
+        {
+          "src": "https://d1j2qr4p4hoxbs.cloudfront.net/articles/6a99279640a33e54fec1be73/inline-2-baf0e2bebed04d97.webp",
+          "alt": "Flat vector illustration of flowing encrypted data streams and network connections representing zero-trust relay architecture",
+          "width": 1216,
+          "height": 704
+        }
+      ],
+      "published_at": "2026-09-10T21:22:02.852Z",
+      "updated_at": null,
+      "path": "src/content/blog/articles/woodpecker-ci-self-hosted-deployment.md"
+    },
     {
       "source_article_id": "6aa2561c099ca8701a7e1195",
       "slug": "master-application-deployment-guide",
