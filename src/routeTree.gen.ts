@@ -10,6 +10,7 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as UiRouteImport } from './routes/ui'
+import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as DomainsRouteImport } from './routes/domains'
 import { Route as AppsRouteImport } from './routes/apps'
@@ -31,6 +32,11 @@ import { Route as BoxesBaseAppsAppRouteImport } from './routes/boxes/$base_.apps
 const UiRoute = UiRouteImport.update({
   id: '/ui',
   path: '/ui',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
+  id: '/sitemap.xml',
+  path: '/sitemap.xml',
   getParentRoute: () => rootRouteImport,
 } as any)
 const LoginRoute = LoginRouteImport.update({
@@ -124,6 +130,7 @@ export interface FileRoutesByFullPath {
   '/apps': typeof AppsRoute
   '/domains': typeof DomainsRoute
   '/login': typeof LoginRoute
+  '/sitemap.xml': typeof SitemapDotxmlRoute
   '/ui': typeof UiRoute
   '/apps/new': typeof AppsNewRoute
   '/auth/callback': typeof AuthCallbackRoute
@@ -144,6 +151,7 @@ export interface FileRoutesByTo {
   '/apps': typeof AppsRoute
   '/domains': typeof DomainsRoute
   '/login': typeof LoginRoute
+  '/sitemap.xml': typeof SitemapDotxmlRoute
   '/ui': typeof UiRoute
   '/apps/new': typeof AppsNewRoute
   '/auth/callback': typeof AuthCallbackRoute
@@ -165,6 +173,7 @@ export interface FileRoutesById {
   '/apps': typeof AppsRoute
   '/domains': typeof DomainsRoute
   '/login': typeof LoginRoute
+  '/sitemap.xml': typeof SitemapDotxmlRoute
   '/ui': typeof UiRoute
   '/apps_/new': typeof AppsNewRoute
   '/auth/callback': typeof AuthCallbackRoute
@@ -187,6 +196,7 @@ export interface FileRouteTypes {
     | '/apps'
     | '/domains'
     | '/login'
+    | '/sitemap.xml'
     | '/ui'
     | '/apps/new'
     | '/auth/callback'
@@ -207,6 +217,7 @@ export interface FileRouteTypes {
     | '/apps'
     | '/domains'
     | '/login'
+    | '/sitemap.xml'
     | '/ui'
     | '/apps/new'
     | '/auth/callback'
@@ -227,6 +238,7 @@ export interface FileRouteTypes {
     | '/apps'
     | '/domains'
     | '/login'
+    | '/sitemap.xml'
     | '/ui'
     | '/apps_/new'
     | '/auth/callback'
@@ -248,6 +260,7 @@ export interface RootRouteChildren {
   AppsRoute: typeof AppsRoute
   DomainsRoute: typeof DomainsRoute
   LoginRoute: typeof LoginRoute
+  SitemapDotxmlRoute: typeof SitemapDotxmlRoute
   UiRoute: typeof UiRoute
   AppsNewRoute: typeof AppsNewRoute
   AuthCallbackRoute: typeof AuthCallbackRoute
@@ -271,6 +284,13 @@ declare module '@tanstack/react-router' {
       path: '/ui'
       fullPath: '/ui'
       preLoaderRoute: typeof UiRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/sitemap.xml': {
+      id: '/sitemap.xml'
+      path: '/sitemap.xml'
+      fullPath: '/sitemap.xml'
+      preLoaderRoute: typeof SitemapDotxmlRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/login': {
@@ -400,6 +420,7 @@ const rootRouteChildren: RootRouteChildren = {
   AppsRoute: AppsRoute,
   DomainsRoute: DomainsRoute,
   LoginRoute: LoginRoute,
+  SitemapDotxmlRoute: SitemapDotxmlRoute,
   UiRoute: UiRoute,
   AppsNewRoute: AppsNewRoute,
   AuthCallbackRoute: AuthCallbackRoute,
