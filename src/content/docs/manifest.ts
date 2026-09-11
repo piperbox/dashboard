@@ -1,7 +1,9 @@
-// Nav order and labels live here, not as frontmatter upstream: GitHub renders
-// YAML frontmatter as a table atop the file, degrading the GitHub reading
-// experience that keeping the source in piperbox/piper is meant to protect.
+// Nav order and labels come from piper's docs/manifest.json, synced by
+// `bun run sync:docs`. Flat for now; sections arrive with the layout work.
+import manifest from "./manifest.json";
+
 export type DocEntry = { slug: string; title: string };
 
-// Empty until piper's docs are reworked. Add entries after `bun run sync:docs`.
-export const DOCS: DocEntry[] = [];
+export const DOCS: DocEntry[] = manifest.sections.flatMap(
+	(section) => section.pages,
+);

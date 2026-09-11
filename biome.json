@@ -15,6 +15,7 @@
 			"**/vite.config.ts",
 			"!**/src/routeTree.gen.ts",
 			"!**/src/content/blog",
+			"!**/src/content/docs/*.json",
 			"!**/src/styles.css"
 		]
 	},
