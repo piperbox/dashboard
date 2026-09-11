@@ -1,72 +1,110 @@
 import { expect, test } from "bun:test";
-import { docHref, extractHeadings, leadParagraph, slugFromPath } from "./docs";
+import {
+	allPages,
+	type DocEntry,
+	docHref,
+	extractHeadings,
+	leadParagraph,
+	slugFromPath,
+} from "./docs";
+
+const DOCS: DocEntry[] = [
+	{ slug: "install", file: "guides/install.md", title: "Install" },
+	{
+		slug: "first-deploy",
+		file: "guides/first-deploy.md",
+		title: "First deploy",
+	},
+	{ slug: "cli", file: "reference/cli.md", title: "CLI" },
+];
 
 test("absolute urls pass through as external", () => {
-	expect(docHref("https://example.com/x")).toEqual({
+	expect(docHref("https://example.com/x", "guides/install.md", DOCS)).toEqual({
 		href: "https://example.com/x",
 		external: true,
 	});
 });
 
 test("bare anchors pass through as internal", () => {
-	expect(docHref("#install")).toEqual({ href: "#install", external: false });
-});
-
-test("markdown links become docs routes", () => {
-	expect(docHref("custom-domains.md")).toEqual({
-		href: "/docs/custom-domains",
+	expect(docHref("#install", "guides/install.md", DOCS)).toEqual({
+		href: "#install",
 		external: false,
 	});
 });
 
-test("markdown links keep their anchor", () => {
-	expect(docHref("getting-started.md#install")).toEqual({
-		href: "/docs/getting-started#install",
+test("a page in the same folder becomes its docs route", () => {
+	expect(docHref("first-deploy.md", "guides/install.md", DOCS)).toEqual({
+		href: "/docs/first-deploy",
 		external: false,
 	});
 });
 
-test("markdown links to a file in a subdirectory fall back to the repo blob url", () => {
-	// Real case: getting-started.md and manual-setup.md both link to
-	// runbooks/git-deploy-e2e.md, which isn't synced to the site.
-	expect(docHref("runbooks/git-deploy-e2e.md")).toEqual({
-		href: "https://github.com/piperbox/piper/blob/main/docs/runbooks/git-deploy-e2e.md",
+test("same-folder links keep their anchor", () => {
+	expect(docHref("install.md#apt", "guides/first-deploy.md", DOCS)).toEqual({
+		href: "/docs/install#apt",
+		external: false,
+	});
+});
+
+test("a page in another folder resolves through the manifest", () => {
+	expect(
+		docHref("../reference/cli.md#verbs", "guides/install.md", DOCS),
+	).toEqual({
+		href: "/docs/cli#verbs",
+		external: false,
+	});
+	expect(docHref("../guides/install.md", "reference/cli.md", DOCS)).toEqual({
+		href: "/docs/install",
+		external: false,
+	});
+});
+
+test("a page the manifest does not list falls back to the repo blob url", () => {
+	// Real case: guides/install.md links to ../self-host/relay.md, which the
+	// site does not publish.
+	expect(
+		docHref("../self-host/relay.md#configure", "guides/install.md", DOCS),
+	).toEqual({
+		href: "https://github.com/piperbox/piper/blob/main/docs/self-host/relay.md#configure",
 		external: true,
 	});
 });
 
-test("subdirectory markdown links keep their anchor in the blob url", () => {
-	// Real case: manual-setup.md#L137 links to a specific runbook section.
-	expect(docHref("runbooks/git-deploy-e2e.md#part-b--relay")).toEqual({
-		href: "https://github.com/piperbox/piper/blob/main/docs/runbooks/git-deploy-e2e.md#part-b--relay",
+test("other relative paths fall back to the blob url, relative to the linking folder", () => {
+	expect(
+		docHref("packaging/systemd/piperd.service", "guides/install.md", DOCS),
+	).toEqual({
+		href: "https://github.com/piperbox/piper/blob/main/docs/guides/packaging/systemd/piperd.service",
 		external: true,
 	});
 });
 
-test("other relative paths fall back to the repo blob url, relative to docs/", () => {
-	expect(docHref("packaging/systemd/piperd.service")).toEqual({
-		href: "https://github.com/piperbox/piper/blob/main/docs/packaging/systemd/piperd.service",
+test("a link that climbs out of docs/ lands on the repo file", () => {
+	expect(docHref("../../CLAUDE.md", "guides/install.md", DOCS)).toEqual({
+		href: "https://github.com/piperbox/piper/blob/main/CLAUDE.md",
 		external: true,
 	});
 });
 
 test("an absolute url ending in .md stays external", () => {
-	expect(docHref("https://example.com/a.md")).toEqual({
+	expect(
+		docHref("https://example.com/a.md", "guides/install.md", DOCS),
+	).toEqual({
 		href: "https://example.com/a.md",
 		external: true,
 	});
 });
 
 test("an anchor containing .md is treated as a bare anchor, not markdown", () => {
-	expect(docHref("#anchor.md")).toEqual({
+	expect(docHref("#anchor.md", "guides/install.md", DOCS)).toEqual({
 		href: "#anchor.md",
 		external: false,
 	});
 });
 
 test("a trailing empty anchor does not produce a dangling #", () => {
-	expect(docHref("getting-started.md#")).toEqual({
-		href: "/docs/getting-started",
+	expect(docHref("install.md#", "guides/first-deploy.md", DOCS)).toEqual({
+		href: "/docs/install",
 		external: false,
 	});
 });
@@ -122,4 +160,22 @@ test("derives a slug from a content path", () => {
 	expect(slugFromPath("../content/docs/getting-started.md")).toBe(
 		"getting-started",
 	);
+});
+
+test("allPages flattens sections in manifest order", () => {
+	const pages = allPages({
+		sections: [
+			{
+				title: "Guides",
+				pages: [
+					{ slug: "install", file: "guides/install.md", title: "Install" },
+				],
+			},
+			{
+				title: "Reference",
+				pages: [{ slug: "cli", file: "reference/cli.md", title: "CLI" }],
+			},
+		],
+	});
+	expect(pages.map((page) => page.slug)).toEqual(["install", "cli"]);
 });

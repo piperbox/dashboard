@@ -1,26 +1,27 @@
 import { createFileRoute, notFound } from "@tanstack/react-router";
 import { DocsLayout } from "@/components/docs-layout";
 import { DocsPage } from "@/components/docs-page";
-import { DOCS } from "@/content/docs/manifest";
-import { docHead } from "@/lib/docs";
+import manifest from "@/content/docs/manifest.json";
+import { allPages, docHead } from "@/lib/docs";
 import { loadDoc } from "@/lib/docs-content";
 
 export const Route = createFileRoute("/docs/$slug")({
 	staticData: { chrome: false },
 	loader: async ({ params }) => {
-		const markdown = await loadDoc(params.slug);
-		if (!markdown) throw notFound();
-		return { markdown };
+		const page = allPages(manifest).find((doc) => doc.slug === params.slug);
+		const markdown = page ? await loadDoc(params.slug) : null;
+		if (!page || !markdown) throw notFound();
+		return { markdown, file: page.file };
 	},
 	head: ({ params }) => docHead(params.slug),
 	component: DocPage,
 });
 
 function DocPage() {
-	const { markdown } = Route.useLoaderData();
+	const { markdown, file } = Route.useLoaderData();
 	return (
-		<DocsLayout docs={DOCS}>
-			<DocsPage markdown={markdown} />
+		<DocsLayout sections={manifest.sections}>
+			<DocsPage markdown={markdown} file={file} docs={allPages(manifest)} />
 		</DocsLayout>
 	);
 }

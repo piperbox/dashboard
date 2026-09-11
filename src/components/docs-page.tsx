@@ -4,10 +4,20 @@ import Markdown from "react-markdown";
 import rehypeSlug from "rehype-slug";
 import remarkGfm from "remark-gfm";
 import { markdownComponents } from "@/components/markdown-components";
-import { docHref, extractHeadings } from "@/lib/docs";
+import { type DocEntry, docHref, extractHeadings } from "@/lib/docs";
 
-function DocLink({ href, children }: { href?: string; children?: ReactNode }) {
-	const link = docHref(href ?? "");
+function DocLink({
+	href,
+	file,
+	docs,
+	children,
+}: {
+	href?: string;
+	file: string;
+	docs: DocEntry[];
+	children?: ReactNode;
+}) {
+	const link = docHref(href ?? "", file, docs);
 	if (link.external) {
 		return (
 			<a href={link.href} target="_blank" rel="noreferrer">
@@ -23,7 +33,15 @@ function DocLink({ href, children }: { href?: string; children?: ReactNode }) {
 	return <Link to={link.href}>{children}</Link>;
 }
 
-export function DocsPage({ markdown }: { markdown: string }) {
+export function DocsPage({
+	markdown,
+	file,
+	docs,
+}: {
+	markdown: string;
+	file: string;
+	docs: DocEntry[];
+}) {
 	const headings = extractHeadings(markdown);
 
 	return (
@@ -41,7 +59,9 @@ export function DocsPage({ markdown }: { markdown: string }) {
 							</h1>
 						),
 						a: ({ href, children }) => (
-							<DocLink href={href}>{children}</DocLink>
+							<DocLink href={href} file={file} docs={docs}>
+								{children}
+							</DocLink>
 						),
 					}}
 				>

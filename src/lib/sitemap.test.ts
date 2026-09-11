@@ -37,7 +37,13 @@ test("lists the blog index and every article with a trailing slash and lastmod",
 test("lists the docs index and each doc when the docs manifest has entries", () => {
 	const xml = buildSitemap({
 		articles: [],
-		docs: [{ slug: "getting-started", title: "Getting started" }],
+		docs: [
+			{
+				slug: "getting-started",
+				file: "guides/getting-started.md",
+				title: "Getting started",
+			},
+		],
 	});
 	expect(locs(xml)).toEqual([
 		"https://piperbox.dev/",

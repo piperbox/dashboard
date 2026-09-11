@@ -95,14 +95,9 @@ function Header() {
 				<a className="text-muted-foreground" href="#how">
 					how it works
 				</a>
-				<a
-					className="text-muted-foreground"
-					href={REPO_URL}
-					target="_blank"
-					rel="noreferrer"
-				>
+				<Link className="text-muted-foreground" to="/docs">
 					docs
-				</a>
+				</Link>
 				<Link className="text-muted-foreground" to="/blog/">
 					blog
 				</Link>
@@ -175,9 +170,7 @@ function Hero() {
 					data-lp-hero
 					className="mt-4 flex justify-center gap-5 text-[13px] text-muted-foreground"
 				>
-					<a href={REPO_URL} target="_blank" rel="noreferrer">
-						read the docs →
-					</a>
+					<Link to="/docs">read the docs →</Link>
 					<span className="text-border">|</span>
 					<a href={REPO_URL} target="_blank" rel="noreferrer">
 						★ star on github
@@ -286,14 +279,9 @@ function Footer() {
 					>
 						github
 					</a>
-					<a
-						className="text-muted-foreground"
-						href={REPO_URL}
-						target="_blank"
-						rel="noreferrer"
-					>
+					<Link className="text-muted-foreground" to="/docs">
 						docs
-					</a>
+					</Link>
 					<Link className="text-muted-foreground" to="/blog/">
 						blog
 					</Link>

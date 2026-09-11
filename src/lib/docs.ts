@@ -4,32 +4,51 @@ import remarkGfm from "remark-gfm";
 import remarkParse from "remark-parse";
 import { unified } from "unified";
 import { visit } from "unist-util-visit";
-import type { DocEntry } from "@/content/docs/manifest";
 import { REPO_URL, SITE_ORIGIN } from "@/lib/links";
+
+// Mirrors piper's docs/manifest.json, the single owner of what is published,
+// in what order, under which title. `file` is relative to piper's docs/.
+export type DocEntry = { slug: string; file: string; title: string };
+export type Section = { title: string; pages: DocEntry[] };
+export type Manifest = { sections: Section[] };
+
+export function allPages(manifest: Manifest): DocEntry[] {
+	return manifest.sections.flatMap((section) => section.pages);
+}
 
 export type DocLink = { href: string; external: boolean };
 
-// Upstream markdown is written for GitHub, so its links are relative to
-// docs/ in the piper repo. A sibling *.md file has a site equivalent;
-// everything else (including .md files in subdirectories, which aren't
-// synced) only exists in the repo, so it points back at GitHub.
-export function docHref(href: string): DocLink {
+// Upstream markdown is written for GitHub, so a link is relative to the
+// linking file's folder under docs/ in the piper repo: a guide links to
+// `install.md` and to `../reference/cli.md`. A target the manifest lists has
+// a site route; anything else exists only in the repo and points at GitHub,
+// which is the right answer for the self-host/ pages the site does not
+// publish.
+export function docHref(
+	href: string,
+	fromFile: string,
+	docs: DocEntry[],
+): DocLink {
 	if (/^https?:\/\//.test(href)) return { href, external: true };
 	if (href.startsWith("#")) return { href, external: false };
 
 	const [path, anchor] = href.split("#");
-	if (path.endsWith(".md") && !path.includes("/")) {
-		const slug = path.slice(0, -3);
-		return {
-			href: `/docs/${slug}${anchor ? `#${anchor}` : ""}`,
-			external: false,
-		};
-	}
+	const suffix = anchor ? `#${anchor}` : "";
+	const target = resolveFromDocs(fromFile, path);
+	const page = docs.find((doc) => `docs/${doc.file}` === target);
+	if (page) return { href: `/docs/${page.slug}${suffix}`, external: false };
+	return { href: `${REPO_URL}/blob/main/${target}${suffix}`, external: true };
+}
 
-	return {
-		href: `${REPO_URL}/blob/main/docs/${href.replace(/^\.?\//, "")}`,
-		external: true,
-	};
+// Resolves `path` against the folder of `fromFile` (both relative to docs/)
+// into a repo-relative path such as `docs/reference/cli.md`.
+function resolveFromDocs(fromFile: string, path: string): string {
+	const segments = ["docs", ...fromFile.split("/").slice(0, -1)];
+	for (const part of path.split("/")) {
+		if (part === "..") segments.pop();
+		else if (part !== "." && part !== "") segments.push(part);
+	}
+	return segments.join("/");
 }
 
 export type Heading = { depth: 2 | 3; text: string; id: string };

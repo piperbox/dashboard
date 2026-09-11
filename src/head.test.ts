@@ -100,7 +100,11 @@ test("the docs index is noindex only while it has nothing to show", () => {
 		meta.some((m) => m.name === "robots" && m.content === "noindex");
 	expect(noindex(docsIndexHead([]).meta)).toBe(true);
 	expect(
-		noindex(docsIndexHead([{ slug: "install", title: "Install" }]).meta),
+		noindex(
+			docsIndexHead([
+				{ slug: "install", file: "guides/install.md", title: "Install" },
+			]).meta,
+		),
 	).toBe(false);
 	expect(noindex(docHead("install").meta)).toBe(false);
 });

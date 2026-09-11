@@ -1,5 +1,5 @@
-import type { DocEntry } from "@/content/docs/manifest";
 import { type Article, articleUrl, BLOG_URL } from "@/lib/blog";
+import type { DocEntry } from "@/lib/docs";
 import { SITE_ORIGIN } from "@/lib/links";
 
 type Entry = { loc: string; lastmod?: string };
