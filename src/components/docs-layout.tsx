@@ -1,13 +1,13 @@
 import { Link } from "@tanstack/react-router";
 import type { ReactNode } from "react";
 import { PublicHeader } from "@/components/public-header";
-import type { DocEntry } from "@/content/docs/manifest";
+import type { Section } from "@/lib/docs";
 
 export function DocsLayout({
-	docs,
+	sections,
 	children,
 }: {
-	docs: DocEntry[];
+	sections: Section[];
 	children: ReactNode;
 }) {
 	return (
@@ -15,20 +15,27 @@ export function DocsLayout({
 			<PublicHeader section="docs" />
 
 			<div className="mx-auto flex max-w-5xl gap-8 px-4 py-8">
-				{docs.length > 0 && (
+				{sections.length > 0 && (
 					<nav
 						aria-label="Documentation"
 						className="hidden w-44 shrink-0 self-start text-xs lg:block"
 					>
-						<ul className="space-y-1">
-							{docs.map((doc) => (
-								<li key={doc.slug}>
-									<Link to="/docs/$slug" params={{ slug: doc.slug }}>
-										{doc.title}
-									</Link>
-								</li>
-							))}
-						</ul>
+						{sections.map((section) => (
+							<div key={section.title} className="mb-4">
+								<div className="mb-2 text-[11px] text-muted-foreground uppercase tracking-wider">
+									{section.title}
+								</div>
+								<ul className="space-y-1">
+									{section.pages.map((doc) => (
+										<li key={doc.slug}>
+											<Link to="/docs/$slug" params={{ slug: doc.slug }}>
+												{doc.title}
+											</Link>
+										</li>
+									))}
+								</ul>
+							</div>
+						))}
 					</nav>
 				)}
 				<main className="min-w-0 flex-1">{children}</main>

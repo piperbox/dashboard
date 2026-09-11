@@ -3,13 +3,10 @@
 // published; this script follows it. No pinned ref: the commit that lands
 // the snapshot IS the pin.
 import { mkdir, readdir, unlink, writeFile } from "node:fs/promises";
+import type { Manifest } from "@/lib/docs";
 
 const REPO = "piperbox/piper";
 const OUT_DIR = new URL("../src/content/docs/", import.meta.url);
-
-type Manifest = {
-	sections: { title: string; pages: { slug: string; file: string }[] }[];
-};
 
 export function rawUrl(file: string): string {
 	return `https://raw.githubusercontent.com/${REPO}/main/docs/${file}`;

@@ -1,5 +1,11 @@
 import { expect, test } from "bun:test";
-import { docHref, extractHeadings, leadParagraph, slugFromPath } from "./docs";
+import {
+	allPages,
+	docHref,
+	extractHeadings,
+	leadParagraph,
+	slugFromPath,
+} from "./docs";
 
 test("absolute urls pass through as external", () => {
 	expect(docHref("https://example.com/x")).toEqual({
@@ -122,4 +128,22 @@ test("derives a slug from a content path", () => {
 	expect(slugFromPath("../content/docs/getting-started.md")).toBe(
 		"getting-started",
 	);
+});
+
+test("allPages flattens sections in manifest order", () => {
+	const pages = allPages({
+		sections: [
+			{
+				title: "Guides",
+				pages: [
+					{ slug: "install", file: "guides/install.md", title: "Install" },
+				],
+			},
+			{
+				title: "Reference",
+				pages: [{ slug: "cli", file: "reference/cli.md", title: "CLI" }],
+			},
+		],
+	});
+	expect(pages.map((page) => page.slug)).toEqual(["install", "cli"]);
 });

@@ -4,8 +4,17 @@ import remarkGfm from "remark-gfm";
 import remarkParse from "remark-parse";
 import { unified } from "unified";
 import { visit } from "unist-util-visit";
-import type { DocEntry } from "@/content/docs/manifest";
 import { REPO_URL, SITE_ORIGIN } from "@/lib/links";
+
+// Mirrors piper's docs/manifest.json, the single owner of what is published,
+// in what order, under which title. `file` is relative to piper's docs/.
+export type DocEntry = { slug: string; file: string; title: string };
+export type Section = { title: string; pages: DocEntry[] };
+export type Manifest = { sections: Section[] };
+
+export function allPages(manifest: Manifest): DocEntry[] {
+	return manifest.sections.flatMap((section) => section.pages);
+}
 
 export type DocLink = { href: string; external: boolean };
 
