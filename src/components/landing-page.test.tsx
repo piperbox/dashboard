@@ -92,13 +92,16 @@ test("every sign-in link points to /login", async () => {
 	}
 });
 
-test("docs links point to the piperbox github repo", async () => {
+test("docs links point to the docs site", async () => {
 	await renderLanding();
 	const links = screen.getAllByRole("link", { name: "docs" });
 	expect(links.length).toBeGreaterThan(0);
 	for (const link of links) {
-		expect(link.getAttribute("href")).toBe("https://github.com/piperbox/piper");
+		expect(link.getAttribute("href")).toBe("/docs");
 	}
+	expect(
+		screen.getByRole("link", { name: /read the docs/ }).getAttribute("href"),
+	).toBe("/docs");
 });
 
 test("copy button copies the install command and flips its label", async () => {
