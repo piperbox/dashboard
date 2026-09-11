@@ -12,12 +12,14 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as UiRouteImport } from './routes/ui'
 import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
 import { Route as LoginRouteImport } from './routes/login'
+import { Route as LlmsDottxtRouteImport } from './routes/llms[.]txt'
 import { Route as DomainsRouteImport } from './routes/domains'
 import { Route as AppsRouteImport } from './routes/apps'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as DocsIndexRouteImport } from './routes/docs/index'
 import { Route as BoxesIndexRouteImport } from './routes/boxes/index'
 import { Route as BlogIndexRouteImport } from './routes/blog/index'
+import { Route as DocsChar123slugChar125DotmdRouteImport } from './routes/docs/{$slug}[.]md'
 import { Route as DocsSlugRouteImport } from './routes/docs/$slug'
 import { Route as BoxesBaseRouteImport } from './routes/boxes/$base'
 import { Route as AuthCallbackRouteImport } from './routes/auth/callback'
@@ -42,6 +44,11 @@ const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
 const LoginRoute = LoginRouteImport.update({
   id: '/login',
   path: '/login',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LlmsDottxtRoute = LlmsDottxtRouteImport.update({
+  id: '/llms.txt',
+  path: '/llms.txt',
   getParentRoute: () => rootRouteImport,
 } as any)
 const DomainsRoute = DomainsRouteImport.update({
@@ -74,6 +81,12 @@ const BlogIndexRoute = BlogIndexRouteImport.update({
   path: '/blog/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const DocsChar123slugChar125DotmdRoute =
+  DocsChar123slugChar125DotmdRouteImport.update({
+    id: '/docs/{$slug}.md',
+    path: '/docs/{$slug}.md',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const DocsSlugRoute = DocsSlugRouteImport.update({
   id: '/docs/$slug',
   path: '/docs/$slug',
@@ -129,6 +142,7 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/apps': typeof AppsRoute
   '/domains': typeof DomainsRoute
+  '/llms.txt': typeof LlmsDottxtRoute
   '/login': typeof LoginRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/ui': typeof UiRoute
@@ -136,6 +150,7 @@ export interface FileRoutesByFullPath {
   '/auth/callback': typeof AuthCallbackRoute
   '/boxes/$base': typeof BoxesBaseRoute
   '/docs/$slug': typeof DocsSlugRoute
+  '/docs/{$slug}.md': typeof DocsChar123slugChar125DotmdRoute
   '/blog/': typeof BlogIndexRoute
   '/boxes/': typeof BoxesIndexRoute
   '/docs/': typeof DocsIndexRoute
@@ -150,6 +165,7 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/apps': typeof AppsRoute
   '/domains': typeof DomainsRoute
+  '/llms.txt': typeof LlmsDottxtRoute
   '/login': typeof LoginRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/ui': typeof UiRoute
@@ -157,6 +173,7 @@ export interface FileRoutesByTo {
   '/auth/callback': typeof AuthCallbackRoute
   '/boxes/$base': typeof BoxesBaseRoute
   '/docs/$slug': typeof DocsSlugRoute
+  '/docs/{$slug}.md': typeof DocsChar123slugChar125DotmdRoute
   '/blog': typeof BlogIndexRoute
   '/boxes': typeof BoxesIndexRoute
   '/docs': typeof DocsIndexRoute
@@ -172,6 +189,7 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/apps': typeof AppsRoute
   '/domains': typeof DomainsRoute
+  '/llms.txt': typeof LlmsDottxtRoute
   '/login': typeof LoginRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/ui': typeof UiRoute
@@ -179,6 +197,7 @@ export interface FileRoutesById {
   '/auth/callback': typeof AuthCallbackRoute
   '/boxes/$base': typeof BoxesBaseRoute
   '/docs/$slug': typeof DocsSlugRoute
+  '/docs/{$slug}.md': typeof DocsChar123slugChar125DotmdRoute
   '/blog/': typeof BlogIndexRoute
   '/boxes/': typeof BoxesIndexRoute
   '/docs/': typeof DocsIndexRoute
@@ -195,6 +214,7 @@ export interface FileRouteTypes {
     | '/'
     | '/apps'
     | '/domains'
+    | '/llms.txt'
     | '/login'
     | '/sitemap.xml'
     | '/ui'
@@ -202,6 +222,7 @@ export interface FileRouteTypes {
     | '/auth/callback'
     | '/boxes/$base'
     | '/docs/$slug'
+    | '/docs/{$slug}.md'
     | '/blog/'
     | '/boxes/'
     | '/docs/'
@@ -216,6 +237,7 @@ export interface FileRouteTypes {
     | '/'
     | '/apps'
     | '/domains'
+    | '/llms.txt'
     | '/login'
     | '/sitemap.xml'
     | '/ui'
@@ -223,6 +245,7 @@ export interface FileRouteTypes {
     | '/auth/callback'
     | '/boxes/$base'
     | '/docs/$slug'
+    | '/docs/{$slug}.md'
     | '/blog'
     | '/boxes'
     | '/docs'
@@ -237,6 +260,7 @@ export interface FileRouteTypes {
     | '/'
     | '/apps'
     | '/domains'
+    | '/llms.txt'
     | '/login'
     | '/sitemap.xml'
     | '/ui'
@@ -244,6 +268,7 @@ export interface FileRouteTypes {
     | '/auth/callback'
     | '/boxes/$base'
     | '/docs/$slug'
+    | '/docs/{$slug}.md'
     | '/blog/'
     | '/boxes/'
     | '/docs/'
@@ -259,6 +284,7 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AppsRoute: typeof AppsRoute
   DomainsRoute: typeof DomainsRoute
+  LlmsDottxtRoute: typeof LlmsDottxtRoute
   LoginRoute: typeof LoginRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
   UiRoute: typeof UiRoute
@@ -266,6 +292,7 @@ export interface RootRouteChildren {
   AuthCallbackRoute: typeof AuthCallbackRoute
   BoxesBaseRoute: typeof BoxesBaseRoute
   DocsSlugRoute: typeof DocsSlugRoute
+  DocsChar123slugChar125DotmdRoute: typeof DocsChar123slugChar125DotmdRoute
   BlogIndexRoute: typeof BlogIndexRoute
   BoxesIndexRoute: typeof BoxesIndexRoute
   DocsIndexRoute: typeof DocsIndexRoute
@@ -298,6 +325,13 @@ declare module '@tanstack/react-router' {
       path: '/login'
       fullPath: '/login'
       preLoaderRoute: typeof LoginRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/llms.txt': {
+      id: '/llms.txt'
+      path: '/llms.txt'
+      fullPath: '/llms.txt'
+      preLoaderRoute: typeof LlmsDottxtRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/domains': {
@@ -340,6 +374,13 @@ declare module '@tanstack/react-router' {
       path: '/blog'
       fullPath: '/blog/'
       preLoaderRoute: typeof BlogIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/docs/{$slug}.md': {
+      id: '/docs/{$slug}.md'
+      path: '/docs/{$slug}.md'
+      fullPath: '/docs/{$slug}.md'
+      preLoaderRoute: typeof DocsChar123slugChar125DotmdRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/docs/$slug': {
@@ -419,6 +460,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AppsRoute: AppsRoute,
   DomainsRoute: DomainsRoute,
+  LlmsDottxtRoute: LlmsDottxtRoute,
   LoginRoute: LoginRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
   UiRoute: UiRoute,
@@ -426,6 +468,7 @@ const rootRouteChildren: RootRouteChildren = {
   AuthCallbackRoute: AuthCallbackRoute,
   BoxesBaseRoute: BoxesBaseRoute,
   DocsSlugRoute: DocsSlugRoute,
+  DocsChar123slugChar125DotmdRoute: DocsChar123slugChar125DotmdRoute,
   BlogIndexRoute: BlogIndexRoute,
   BoxesIndexRoute: BoxesIndexRoute,
   DocsIndexRoute: DocsIndexRoute,
