@@ -5,12 +5,18 @@ import {
 	RouterProvider,
 } from "@tanstack/react-router";
 import { render, screen } from "@testing-library/react";
+import type { DocEntry } from "@/lib/docs";
 import { DocsPage } from "./docs-page";
 
+const DOCS: DocEntry[] = [
+	{ slug: "install", file: "guides/install.md", title: "Install" },
+	{ slug: "cli", file: "reference/cli.md", title: "CLI" },
+];
+
 // DocsPage renders <Link>, which needs a router context to mount.
-async function renderDoc(markdown: string) {
+async function renderDoc(markdown: string, file = "guides/first-deploy.md") {
 	const rootRoute = createRootRoute({
-		component: () => <DocsPage markdown={markdown} />,
+		component: () => <DocsPage markdown={markdown} file={file} docs={DOCS} />,
 	});
 	const router = createRouter({ routeTree: rootRoute });
 	await router.navigate({ to: "/" });
@@ -33,11 +39,27 @@ test("gives headings github-compatible anchor ids", async () => {
 	);
 });
 
-test("rewrites markdown links to docs routes", async () => {
-	await renderDoc("# T\n\n[getting started](getting-started.md#install)\n");
+test("rewrites same-folder markdown links to docs routes", async () => {
+	await renderDoc("# T\n\n[install](install.md#apt)\n");
 	expect(
-		screen.getByRole("link", { name: "getting started" }).getAttribute("href"),
-	).toBe("/docs/getting-started#install");
+		screen.getByRole("link", { name: "install" }).getAttribute("href"),
+	).toBe("/docs/install#apt");
+});
+
+test("rewrites cross-folder markdown links through the manifest", async () => {
+	await renderDoc("# T\n\n[cli](../reference/cli.md#verbs)\n");
+	expect(screen.getByRole("link", { name: "cli" }).getAttribute("href")).toBe(
+		"/docs/cli#verbs",
+	);
+});
+
+test("links to pages the site does not publish open the repo in a new tab", async () => {
+	await renderDoc("# T\n\n[relay](../self-host/relay.md)\n");
+	const link = screen.getByRole("link", { name: "relay" });
+	expect(link.getAttribute("href")).toBe(
+		"https://github.com/piperbox/piper/blob/main/docs/self-host/relay.md",
+	);
+	expect(link.getAttribute("target")).toBe("_blank");
 });
 
 test("renders a bare in-page anchor as a plain anchor, not a router link", async () => {

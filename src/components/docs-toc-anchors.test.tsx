@@ -17,7 +17,9 @@ import { DocsPage } from "./docs-page";
 // the ids present in the rendered document, in order.
 async function renderedHeadingIds(markdown: string): Promise<string[]> {
 	const rootRoute = createRootRoute({
-		component: () => <DocsPage markdown={markdown} />,
+		component: () => (
+			<DocsPage markdown={markdown} file="guides/install.md" docs={[]} />
+		),
 	});
 	const router = createRouter({ routeTree: rootRoute });
 	await router.navigate({ to: "/" });
