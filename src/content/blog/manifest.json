@@ -1,7 +1,36 @@
 {
   "version": 1,
-  "generated_at": "2026-09-10T21:22:02.852Z",
+  "generated_at": "2026-09-12T08:03:20.763Z",
   "articles": [
+    {
+      "source_article_id": "6aa4f8ec3c18ee20c4e73000",
+      "slug": "portainer-alternative-docker-management",
+      "title": "Beyond Portainer: How Git-Driven Deployment Platforms Compare for Self-Hosted Environments",
+      "meta_title": "Portainer Alternatives for Self-Hosted Deployment 2026",
+      "meta_description": "Compare Docker management tools and deployment platforms. Explore Portainer alternatives with zero-trust architecture, CGNAT support, and git-based workflows",
+      "keyword": "portainer alternative",
+      "cover": "https://d1j2qr4p4hoxbs.cloudfront.net/articles/6aa4f8ec3c18ee20c4e73000/cover-f5a4d37a4e9436ca.webp",
+      "cover_alt": "Flat vector illustration of multiple computing devices connected by network cables in a distributed deployment setup",
+      "cover_width": 1216,
+      "cover_height": 640,
+      "images": [
+        {
+          "src": "https://d1j2qr4p4hoxbs.cloudfront.net/articles/6aa4f8ec3c18ee20c4e73000/inline-1-212d68577d933d68.webp",
+          "alt": "Flat vector illustration showing abstract layered shapes representing different deployment platform architectures and comparison",
+          "width": 1216,
+          "height": 704
+        },
+        {
+          "src": "https://d1j2qr4p4hoxbs.cloudfront.net/articles/6aa4f8ec3c18ee20c4e73000/inline-2-6d6d98a980590775.webp",
+          "alt": "Flat vector illustration of home server components and single-board computers arranged on a surface with connecting network cables",
+          "width": 1216,
+          "height": 704
+        }
+      ],
+      "published_at": "2026-09-12T08:03:20.763Z",
+      "updated_at": null,
+      "path": "src/content/blog/articles/portainer-alternative-docker-management.md"
+    },
     {
       "source_article_id": "6a99279640a33e54fec1be73",
       "slug": "woodpecker-ci-self-hosted-deployment",
