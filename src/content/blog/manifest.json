@@ -1,7 +1,36 @@
 {
   "version": 1,
-  "generated_at": "2026-09-12T08:03:20.763Z",
+  "generated_at": "2026-09-13T16:46:44.763Z",
   "articles": [
+    {
+      "source_article_id": "6aa6d300645b8f87bc28a9ae",
+      "slug": "glance-docker-dashboard-guide",
+      "title": "The Complete Guide to Running the Glance Dashboard in Docker",
+      "meta_title": "Glance Docker Guide: Setup, Config & Deployment",
+      "meta_description": "Learn how to run the Glance self-hosted dashboard in Docker, configure widgets, and expose it securely—even from a home server or Raspberry Pi behind CGNAT.",
+      "keyword": "glance docker",
+      "cover": "https://d1j2qr4p4hoxbs.cloudfront.net/articles/6aa6d300645b8f87bc28a9ae/cover-660ad33cc233fffd.webp",
+      "cover_alt": "A schematic diagram showing Glance running in a Docker container with connections to the Docker daemon, multiple widget services, and a persistent configuration volume.",
+      "cover_width": 1376,
+      "cover_height": 768,
+      "images": [
+        {
+          "src": "https://d1j2qr4p4hoxbs.cloudfront.net/articles/6aa6d300645b8f87bc28a9ae/inline-1-47f2f6df2a0f8f1f.webp",
+          "alt": "A network diagram illustrating a home server or Raspberry Pi behind CGNAT connecting through a zero-trust relay to enable public HTTPS access.",
+          "width": 1376,
+          "height": 768
+        },
+        {
+          "src": "https://d1j2qr4p4hoxbs.cloudfront.net/articles/6aa6d300645b8f87bc28a9ae/inline-2-555dcd8c48be0706.webp",
+          "alt": "A comparative schematic showing two deployment paths: a traditional reverse proxy setup and a modern zero-trust relay architecture, each with their respective data flows and security layers.",
+          "width": 1376,
+          "height": 768
+        }
+      ],
+      "published_at": "2026-09-13T16:46:44.763Z",
+      "updated_at": null,
+      "path": "src/content/blog/articles/glance-docker-dashboard-guide.md"
+    },
     {
       "source_article_id": "6aa4f8ec3c18ee20c4e73000",
       "slug": "portainer-alternative-docker-management",
