@@ -1,7 +1,36 @@
 {
   "version": 1,
-  "generated_at": "2026-09-13T16:46:44.763Z",
+  "generated_at": "2026-09-20T10:08:07.953Z",
   "articles": [
+    {
+      "source_article_id": "6aae33bbc48f2c88f9f5e920",
+      "slug": "best-self-hosted-applications",
+      "title": "The Self-Hosted App Stack You Actually Need—and How to Deploy It Anywhere",
+      "meta_title": "Best Self-Hosted Apps: Deploy Anywhere with Piper",
+      "meta_description": "Discover the best self-hosted apps and how Piper's zero-trust git push deployments give you public HTTPS on any hardware, even behind CGNAT.",
+      "keyword": "best self hosted applications",
+      "cover": "https://d1j2qr4p4hoxbs.cloudfront.net/articles/6aae33bbc48f2c88f9f5e920/cover-d21e1b211be5020c.webp",
+      "cover_alt": "A diagram illustrating the core components and data flow of a Platform-as-a-Service (PaaS) deployment, showing a developer pushing code to a PaaS, which then deploys the application.",
+      "cover_width": 1376,
+      "cover_height": 768,
+      "images": [
+        {
+          "src": "https://d1j2qr4p4hoxbs.cloudfront.net/articles/6aae33bbc48f2c88f9f5e920/inline-1-7eecb6eff2c33e06.webp",
+          "alt": "A detailed schematic showing Piper's zero-trust git push deployment flow, from a code repository, through a build process, a secure relay, to a target device and finally accessed by a client.",
+          "width": 1376,
+          "height": 768
+        },
+        {
+          "src": "https://d1j2qr4p4hoxbs.cloudfront.net/articles/6aae33bbc48f2c88f9f5e920/inline-2-9161369ec4816c77.webp",
+          "alt": "A diagram illustrating the challenges traditional PaaS models face when deploying applications to self-hosted hardware, highlighting network and compatibility barriers.",
+          "width": 1376,
+          "height": 768
+        }
+      ],
+      "published_at": "2026-09-20T10:08:07.953Z",
+      "updated_at": null,
+      "path": "src/content/blog/articles/best-self-hosted-applications.md"
+    },
     {
       "source_article_id": "6aa6d300645b8f87bc28a9ae",
       "slug": "glance-docker-dashboard-guide",
