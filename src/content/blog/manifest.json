@@ -1,7 +1,36 @@
 {
   "version": 1,
-  "generated_at": "2026-09-20T10:08:07.953Z",
+  "generated_at": "2026-09-21T07:28:45.422Z",
   "articles": [
+    {
+      "source_article_id": "6ab0d6d7c9f9c7881a0298ac",
+      "slug": "coolify-alternatives-self-hosted-paas-compared",
+      "title": "Coolify Alternatives for Self-Hosted Git Push Deployment",
+      "meta_title": "Coolify Alternatives: Self-Hosted PaaS Compared",
+      "meta_description": "Compare Coolify alternatives for self-hosted PaaS deployments. Learn how zero-trust git-push deploys work on any hardware, including Raspberry Pi behind CGNAT.",
+      "keyword": "coolify alternatives",
+      "cover": "https://d1j2qr4p4hoxbs.cloudfront.net/articles/6ab0d6d7c9f9c7881a0298ac/cover-fcf1f89121ad7181.webp",
+      "cover_alt": "A diagram illustrating the zero-trust relay architecture, showing a developer pushing code, which goes through a relay, an encrypted tunnel, and finally reaches the deploy target.",
+      "cover_width": 1376,
+      "cover_height": 768,
+      "images": [
+        {
+          "src": "https://d1j2qr4p4hoxbs.cloudfront.net/articles/6ab0d6d7c9f9c7881a0298ac/inline-1-5d917520609b935c.webp",
+          "alt": "A comparison diagram showing three deployment models: Managed PaaS, Reverse Proxy Self-Hosting, and Zero-Trust Relay, with their respective infrastructure components like Cloud VMs and Home Servers.",
+          "width": 1376,
+          "height": 768
+        },
+        {
+          "src": "https://d1j2qr4p4hoxbs.cloudfront.net/articles/6ab0d6d7c9f9c7881a0298ac/inline-2-f92a966c05f5e5da.webp",
+          "alt": "A schematic diagram detailing the deployment workflow from a git push to public HTTPS, showing steps like code commit, git server interaction, image building, application deployment, and final public access.",
+          "width": 1376,
+          "height": 768
+        }
+      ],
+      "published_at": "2026-09-21T07:28:45.422Z",
+      "updated_at": null,
+      "path": "src/content/blog/articles/coolify-alternatives-self-hosted-paas-compared.md"
+    },
     {
       "source_article_id": "6aae33bbc48f2c88f9f5e920",
       "slug": "best-self-hosted-applications",
